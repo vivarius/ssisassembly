@@ -11,7 +11,6 @@ namespace SSISAssemblyExecutor
 
         private TaskHost _taskHost;
         private Connections _connections;
-
         #endregion
 
         #region Constructor
