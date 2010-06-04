@@ -55,6 +55,7 @@ namespace SSISAssemblyExecutor
             this.lbOutputValue = new System.Windows.Forms.Label();
             this.cmbBoxReturnVariable = new System.Windows.Forms.ComboBox();
             this.grdColParams = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.grdColDirection = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grdColVars = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.grdColExpression = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabControl1.SuspendLayout();
@@ -121,7 +122,7 @@ namespace SSISAssemblyExecutor
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(46, 13);
             this.label5.TabIndex = 35;
-            this.label5.Text = "1.0.0.58";
+            this.label5.Text = "1.0.0.60";
             // 
             // cmbConnection
             // 
@@ -271,6 +272,7 @@ namespace SSISAssemblyExecutor
             this.grdParameters.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.grdParameters.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.grdColParams,
+            this.grdColDirection,
             this.grdColVars,
             this.grdColExpression});
             this.grdParameters.Location = new System.Drawing.Point(11, 190);
@@ -308,11 +310,18 @@ namespace SSISAssemblyExecutor
             this.grdColParams.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.grdColParams.Width = 66;
             // 
+            // grdColDirection
+            // 
+            this.grdColDirection.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.grdColDirection.HeaderText = "Param Direction";
+            this.grdColDirection.Name = "grdColDirection";
+            this.grdColDirection.ReadOnly = true;
+            this.grdColDirection.Width = 98;
+            // 
             // grdColVars
             // 
             this.grdColVars.DisplayStyle = System.Windows.Forms.DataGridViewComboBoxDisplayStyle.ComboBox;
             this.grdColVars.DropDownWidth = 300;
-            this.grdColVars.Frozen = true;
             this.grdColVars.HeaderText = "Variables";
             this.grdColVars.MaxDropDownItems = 10;
             this.grdColVars.Name = "grdColVars";
@@ -324,7 +333,6 @@ namespace SSISAssemblyExecutor
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.Padding = new System.Windows.Forms.Padding(2);
             this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle1;
-            this.grdColExpression.Frozen = true;
             this.grdColExpression.HeaderText = "f(x)";
             this.grdColExpression.Name = "grdColExpression";
             this.grdColExpression.Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -390,6 +398,7 @@ namespace SSISAssemblyExecutor
         private System.Windows.Forms.Label lbOutputValue;
         private ComboBox cmbBoxReturnVariable;
         private DataGridViewTextBoxColumn grdColParams;
+        private DataGridViewTextBoxColumn grdColDirection;
         private DataGridViewComboBoxColumn grdColVars;
         private DataGridViewButtonColumn grdColExpression;
 

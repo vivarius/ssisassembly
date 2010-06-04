@@ -25,5 +25,24 @@ namespace SSIS.TestLibrary
             }
             return returnedString;
         }
+
+        public static void TestMethodWithoutReturn(string AppID)
+        {
+            string returnedString = AppID + " returned value from package execution " + ConfigurationManager.AppSettings["Test"];
+            try
+            {
+                using (Stream stream = new FileStream(@"c:\testSSIS1.txt", FileMode.OpenOrCreate))
+                {
+                    byte[] buffer = Encoding.ASCII.GetBytes(returnedString);
+
+                    stream.Write(buffer, 0, buffer.Length);
+                    stream.Close();
+                    stream.Dispose();
+                }
+            }
+            catch
+            {
+            }
+        }
     }
 }

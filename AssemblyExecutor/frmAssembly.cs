@@ -12,6 +12,11 @@ namespace SSISAssemblyExecutor
 {
     public partial class frmAssembly : Form
     {
+        private enum ParameterType
+        {
+            In, Out, Ref
+        }
+
         #region Private Properties
         private Assembly assembly;
         private TaskHost _taskHost;
@@ -42,7 +47,7 @@ namespace SSISAssemblyExecutor
             grdParameters.DataError += grdParameters_DataError;
 
             GetAssemblyInfo(FilePath);
-        }  
+        }
 
         public frmAssembly(TaskHost taskHost, Connections connections)
         {
@@ -126,18 +131,18 @@ namespace SSISAssemblyExecutor
 
         private void cmbMethod_SelectedIndexChanged(object sender, EventArgs e)
         {
-            GetMethodsParams((MethodInfo)(((ComboItem)((ComboBox)sender).SelectedItem).BindingValue));
+            GetMethodsParams((MethodInfo)(((ComboBoxObjectComboItem)((ComboBox)sender).SelectedItem).ValueMemeber));
         }
 
         private void grdParameters_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             switch (e.ColumnIndex)
             {
-                case 2:
+                case 3:
                     {
                         var expressionBuilder = ExpressionBuilder.Instantiate(_taskHost.Variables,
                                                                                             _taskHost.VariableDispenser,
-                                                                                            Type.GetType((grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 2]).Value.ToString().Split('=')[1].Trim()),
+                                                                                            Type.GetType((grdParameters.Rows[e.RowIndex].Cells[0]).Value.ToString().Split('=')[1].Trim()),
                                                                                             string.Empty);
 
                         if (expressionBuilder.ShowDialog() == DialogResult.OK)
@@ -172,13 +177,6 @@ namespace SSISAssemblyExecutor
         #endregion
 
         #region Methods
-
-        //private string ParseVariable(string Variable)
-        //{
-        //    //@[System::CreatorComputerName]
-        //    var strSecond = Variable.Split("::")[1];
-        //    return strSecond.Substring(0, strSecond.Length - 1);
-        //}
 
         private void GetAssemblyInfo(string filePath)
         {
@@ -252,12 +250,12 @@ namespace SSISAssemblyExecutor
                                               where method.ReflectedType.IsPublic && !method.ReflectedType.IsGenericTypeDefinition && method.ReflectedType.IsVisible
                                               select method)
             {
-                cmbMethod.Items.Add(new ComboItem(method, method.Name));
+                cmbMethod.Items.Add(new ComboBoxObjectComboItem(method, method.Name));
             }
 
 
-            cmbMethod.DisplayMember = "DisplayValue";
-            cmbMethod.ValueMember = "BindingValue";
+            cmbMethod.DisplayMember = "DisplayMember";
+            cmbMethod.ValueMember = "ValueMemeber";
             Cursor = Cursors.Arrow;
         }
 
@@ -276,6 +274,16 @@ namespace SSISAssemblyExecutor
                                                     Value = parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName,
                                                     Tag = parameterInfo.ParameterType.FullName
                                                 };
+                row.Cells["grdColDirection"] = new DataGridViewTextBoxCell
+                                                   {
+                                                       Value = (parameterInfo.IsIn)
+                                                                   ? ParameterType.In.ToString("g")
+                                                                   : (parameterInfo.IsOut)
+                                                                         ? ParameterType.Out.ToString("g")
+                                                                         : (parameterInfo.IsRetval)
+                                                                               ? ParameterType.Ref.ToString("g")
+                                                                               : ParameterType.In.ToString("g")
+                                                   };
 
                 row.Cells["grdColVars"] = LoadVariables(parameterInfo);
 

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SSISAssemblyExecutor")]
+[assembly: AssemblyTitle("Execute Assembly Task")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Cosmin VLASIU")]
-[assembly: AssemblyProduct("SSISAssemblyExecutor")]
-[assembly: AssemblyCopyright("Copyright © CosminV 2010")]
+[assembly: AssemblyProduct("Execute Assembly Task")]
+[assembly: AssemblyCopyright("Copyright © CosminVLASIU 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.58")]
-[assembly: AssemblyFileVersion("1.0.0.58")]
+[assembly: AssemblyVersion("1.0.0.60")]
+[assembly: AssemblyFileVersion("1.0.0.60")]

@@ -2,21 +2,21 @@
 
 namespace SSISAssemblyExecutor
 {
-    public class ComboItem
+    public class ComboBoxObjectComboItem
     {
-        public object BindingValue { get; private set; }
+        public object ValueMemeber { get; private set; }
 
-        public object DisplayValue { get; private set; }
+        public object DisplayMember { get; private set; }
 
-        public ComboItem(object aBindingValue, object aDisplayValue)
+        public ComboBoxObjectComboItem(object aBindingValue, object aDisplayValue)
         {
-            BindingValue = aBindingValue;
-            DisplayValue = aDisplayValue;
+            ValueMemeber = aBindingValue;
+            DisplayMember = aDisplayValue;
         }
 
         public override String ToString()
         {
-            return Convert.ToString(DisplayValue);
+            return Convert.ToString(DisplayMember);
         }
     }
 }

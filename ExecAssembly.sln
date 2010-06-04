@@ -38,19 +38,26 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Development|Any CPU = Development|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
@@ -59,5 +66,9 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C} = {76A3F7F9-3926-47D6-8AD6-8CCE3E69E993}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.ActiveCfg = Development
+		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.Build.0 = Development
 	EndGlobalSection
 EndGlobal

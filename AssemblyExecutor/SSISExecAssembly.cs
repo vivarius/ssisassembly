@@ -3,21 +3,21 @@ using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using SSISAssemblyExecutor;
 using DTSExecResult = Microsoft.SqlServer.Dts.Runtime.DTSExecResult;
 using DTSProductLevel = Microsoft.SqlServer.Dts.Runtime.DTSProductLevel;
 using VariableDispenser = Microsoft.SqlServer.Dts.Runtime.VariableDispenser;
 
-namespace SSISAssemblyExecutor
+namespace SSISAssemblyExecuter100.SSIS
 {
     [DtsTask(
-        DisplayName = "Task 'Execute Assembly'",
+        DisplayName = "Execute Assembly Task",
         UITypeName = "SSISAssemblyExecutor.SSISExecAssemblyUIInterface" +
         ",SSISAssemblyExecuter100," +
-        "Version=1.0.0.58," +
+        "Version=1.0.0.60," +
         "Culture=Neutral," +
         "PublicKeyToken=bf357d0d3805f1fe",
         IconResource = "SSISAssemblyExecutor.SSISAssemblyExecutor.ico",
@@ -49,7 +49,11 @@ namespace SSISAssemblyExecutor
         public string OutPutVariable { get; set; }
         #endregion
 
+        #region Private Properties
+
         Variables vars = null;
+
+        #endregion
 
         #region InitializeTask
 
@@ -102,7 +106,6 @@ namespace SSISAssemblyExecutor
 
         #region Execute
 
-
         public override DTSExecResult Execute(Connections connections, VariableDispenser variableDispenser,
                                               IDTSComponentEvents componentEvents, IDTSLogging log, object transaction)
         {
@@ -127,9 +130,14 @@ namespace SSISAssemblyExecutor
                 if (type == null)
                     throw new Exception("Assembly's type is NULL");
 
+                if (type.IsClass)
+                {
+                    ReflectionTools.CreateInstance(assembly, type);
+                }
+
                 object retValue = type.InvokeMember(AssemblyMethod,
                                                       BindingFlags.InvokeMethod,
-                                                      null,
+                                                      Type.DefaultBinder,
                                                       (BindingFlags.Static | BindingFlags.Public),
                                                       GetValuedParams(vars, variableDispenser));
 
@@ -157,8 +165,6 @@ namespace SSISAssemblyExecutor
             return base.Execute(connections, variableDispenser, componentEvents, log, transaction);
         }
 
-
-
         #endregion
 
         #region Methods
@@ -166,7 +172,7 @@ namespace SSISAssemblyExecutor
         private void GetNeededVariables(VariableDispenser variableDispenser)
         {
             try
-            {//Regex regex = new Regex(@"^@[\s*[a-zA-Z::\s]+\s*]$");
+            {   //Regex regex = new Regex(@"^@[\s*[a-zA-Z::\s]+\s*]$");
                 var mappedParams = MappingParams.Split(';');
 
                 for (int index = 0; index < mappedParams.Length - 1; index++)
@@ -176,10 +182,9 @@ namespace SSISAssemblyExecutor
                     {
                         var regexStr = param.Split('@');
 
-                        foreach (string strVal in regexStr.Where(val => val.Trim().Length != 0))
+                        foreach (var nexSplitedVal in
+                            regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
                         {
-                            var nexSplitedVal = strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
-
                             variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
                         }
                     }
@@ -210,7 +215,6 @@ namespace SSISAssemblyExecutor
             expressionEvaluatorClass.Evaluate(DtsConvert.GetExtendedInterface(variableDispenser), out variableObject, false);
             return variableObject;
         }
-
 
         private object[] GetValuedParams(Variables vars, VariableDispenser variableDispenser)
         {
