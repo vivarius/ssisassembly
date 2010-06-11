@@ -122,7 +122,7 @@ namespace SSISAssemblyExecutor
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(46, 13);
             this.label5.TabIndex = 35;
-            this.label5.Text = "1.0.0.60";
+            this.label5.Text = "1.0.0.71";
             // 
             // cmbConnection
             // 
@@ -313,10 +313,11 @@ namespace SSISAssemblyExecutor
             // grdColDirection
             // 
             this.grdColDirection.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.grdColDirection.HeaderText = "Param Direction";
+            this.grdColDirection.FillWeight = 40F;
+            this.grdColDirection.HeaderText = "Param Type";
             this.grdColDirection.Name = "grdColDirection";
             this.grdColDirection.ReadOnly = true;
-            this.grdColDirection.Width = 98;
+            this.grdColDirection.Width = 89;
             // 
             // grdColVars
             // 
@@ -326,7 +327,7 @@ namespace SSISAssemblyExecutor
             this.grdColVars.MaxDropDownItems = 10;
             this.grdColVars.Name = "grdColVars";
             this.grdColVars.Sorted = true;
-            this.grdColVars.Width = 230;
+            this.grdColVars.Width = 200;
             // 
             // grdColExpression
             // 
@@ -338,7 +339,6 @@ namespace SSISAssemblyExecutor
             this.grdColExpression.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.grdColExpression.Text = "f(x)";
             this.grdColExpression.ToolTipText = "Expressions...";
-            this.grdColExpression.UseColumnTextForButtonValue = true;
             this.grdColExpression.Width = 30;
             // 
             // frmAssembly

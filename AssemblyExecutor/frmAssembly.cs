@@ -7,6 +7,9 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Controls;
+using Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using TaskHost = Microsoft.SqlServer.Dts.Runtime.TaskHost;
+using Variable = Microsoft.SqlServer.Dts.Runtime.Variable;
 
 namespace SSISAssemblyExecutor
 {
@@ -140,6 +143,12 @@ namespace SSISAssemblyExecutor
             {
                 case 3:
                     {
+                        if ((grdParameters.Rows[e.RowIndex].Cells[1]).Value.ToString() != ParameterType.In.ToString("g"))
+                        {
+                            MessageBox.Show("You're not allowed to specify an expression for an OUT or REF type parameter", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            return;
+                        }
+
                         var expressionBuilder = ExpressionBuilder.Instantiate(_taskHost.Variables,
                                                                                             _taskHost.VariableDispenser,
                                                                                             Type.GetType((grdParameters.Rows[e.RowIndex].Cells[0]).Value.ToString().Split('=')[1].Trim()),
@@ -167,7 +176,7 @@ namespace SSISAssemblyExecutor
 
             foreach (DataGridViewRow row in grdParameters.Rows)
             {
-                stringBuilder.Append(row.Cells[0].Value + "|" + row.Cells[1].Value + ";");
+                stringBuilder.Append(row.Cells[0].Value + "|" + row.Cells[2].Value + ";");
             }
 
             _taskHost.Properties["MappingParams"].SetValue(_taskHost, stringBuilder.ToString());
@@ -266,28 +275,27 @@ namespace SSISAssemblyExecutor
 
             foreach (ParameterInfo parameterInfo in methodInfo.GetParameters())
             {
-                var row = new DataGridViewRow();
+                int index = grdParameters.Rows.Add();
 
-                grdParameters.Rows.Add(row);
+                DataGridViewRow row = grdParameters.Rows[index];
+
                 row.Cells["grdColParams"] = new DataGridViewTextBoxCell
                                                 {
                                                     Value = parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName,
                                                     Tag = parameterInfo.ParameterType.FullName
                                                 };
+
                 row.Cells["grdColDirection"] = new DataGridViewTextBoxCell
                                                    {
-                                                       Value = (parameterInfo.IsIn)
+                                                       Value = (!parameterInfo.ParameterType.IsByRef)
                                                                    ? ParameterType.In.ToString("g")
-                                                                   : (parameterInfo.IsOut)
-                                                                         ? ParameterType.Out.ToString("g")
-                                                                         : (parameterInfo.IsRetval)
-                                                                               ? ParameterType.Ref.ToString("g")
-                                                                               : ParameterType.In.ToString("g")
+                                                                   : ParameterType.Out.ToString("g")
                                                    };
 
                 row.Cells["grdColVars"] = LoadVariables(parameterInfo);
 
                 row.Cells["grdColExpression"] = new DataGridViewButtonCell();
+                
             }
 
             string selectedText = string.Empty;
@@ -297,22 +305,20 @@ namespace SSISAssemblyExecutor
             Cursor = Cursors.Arrow;
         }
 
-        private void LoadFileConnections()
-        {
-            foreach (var connection in Connections)
-            {
-                cmbConnection.Items.Add(connection.Name);
-            }
-        }
-
         private DataGridViewComboBoxCell LoadVariables(ParameterInfo parameterInfo)
         {
             var comboBoxCell = new DataGridViewComboBoxCell();
 
-            foreach (Variable variable in
-                Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType))
+            //foreach (Variable variable in
+            //    Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType))
+
+            foreach (Variable variable in Variables)
             {
-                comboBoxCell.Items.Add(variable.Name);
+                if (parameterInfo.ParameterType.IsByRef && variable.DataType == TypeCode.Object 
+                 || Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType)
+                {
+                    comboBoxCell.Items.Add(variable.Name);
+                }
             }
 
             if (isFirstLoad && paramsManager != null && paramsManager.Count > 0)
@@ -343,6 +349,14 @@ namespace SSISAssemblyExecutor
             }
 
             return comboBox;
+        }
+
+        private void LoadFileConnections()
+        {
+            foreach (var connection in Connections)
+            {
+                cmbConnection.Items.Add(connection.Name);
+            }
         }
 
         #endregion

@@ -1,5 +1,4 @@
-﻿using System.Windows.Forms;
-using SSISAssemblyExecutor;
+﻿using SSIS.TestLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -8,11 +7,11 @@ namespace UnitTest
     
     
     /// <summary>
-    ///This is a test class for frmAssemblyTest and is intended
-    ///to contain all frmAssemblyTest Unit Tests
+    ///This is a test class for TestClassTest and is intended
+    ///to contain all TestClassTest Unit Tests
     ///</summary>
     [TestClass()]
-    public class frmAssemblyTest
+    public class TestClassTest
     {
 
 
@@ -66,15 +65,20 @@ namespace UnitTest
 
 
         /// <summary>
-        ///A test for frmAssembly Constructor
+        ///A test for TestMethodEx
         ///</summary>
         [TestMethod()]
-        public void frmAssemblyConstructorTest()
+        public void TestMethodExTest()
         {
-            const string filePath = @"C:\VM-TFS\La Poste\Dev\Butagaz-1.1\BonjourFacteur\LaPoste.Mailing\bin\Debug\LaPoste.Tasks.dll";
-            var target = new frmAssembly(filePath);
-            DialogResult dialogResult = target.ShowDialog();
-            Assert.IsTrue(dialogResult == DialogResult.OK || dialogResult == DialogResult.Cancel);
+            string AppID = "AppID"; // TODO: Initialize to an appropriate value
+            string returnedString = string.Empty; // TODO: Initialize to an appropriate value
+            string returnedStringExpected = string.Empty; // TODO: Initialize to an appropriate value
+            string returnedStringEx = string.Empty; // TODO: Initialize to an appropriate value
+            string returnedStringExExpected = string.Empty; // TODO: Initialize to an appropriate value
+            TestClass.TestMethodEx(AppID, out returnedString, ref returnedStringEx);
+            Assert.AreEqual(returnedStringExpected, returnedString);
+            Assert.AreEqual(returnedStringExExpected, returnedStringEx);
+            Assert.Inconclusive("A method that does not return a value cannot be verified.");
         }
     }
 }

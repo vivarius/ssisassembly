@@ -17,7 +17,7 @@ namespace SSISAssemblyExecuter100.SSIS
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISAssemblyExecutor.SSISExecAssemblyUIInterface" +
         ",SSISAssemblyExecuter100," +
-        "Version=1.0.0.60," +
+        "Version=1.0.0.71," +
         "Culture=Neutral," +
         "PublicKeyToken=bf357d0d3805f1fe",
         IconResource = "SSISAssemblyExecutor.SSISAssemblyExecutor.ico",
@@ -118,8 +118,8 @@ namespace SSISAssemblyExecuter100.SSIS
             try
             {
                 AssemblyPath = connections[AssemblyConnector].ConnectionString;
-                componentEvents.FireInformation(0, "SSISAssembly", "Starts executing method..." + AssemblyMethod, string.Empty, 0,
-                                                ref refire);
+                componentEvents.FireInformation(0, "SSISAssembly", "Starts executing method..." + AssemblyMethod, string.Empty, 0, ref refire);
+
                 Assembly assembly = Assembly.LoadFrom(AssemblyPath);
 
                 if (assembly == null)
@@ -130,24 +130,33 @@ namespace SSISAssemblyExecuter100.SSIS
                 if (type == null)
                     throw new Exception("Assembly's type is NULL");
 
-                if (type.IsClass)
+                object retValue = null;
+
+                MethodInfo methodInfo = type.GetMethod(AssemblyMethod);
+
+                if (methodInfo.IsStatic)
+                    retValue = type.InvokeMember(AssemblyMethod,
+                                                 BindingFlags.InvokeMethod,
+                                                 null,
+                                                 (BindingFlags.Static | BindingFlags.Public),
+                                                 GetValuedParams(vars, variableDispenser));
+
+                else if (type.IsClass && !type.IsAbstract && !type.IsSealed)
                 {
                     ReflectionTools.CreateInstance(assembly, type);
+                    retValue = type.InvokeMember(AssemblyMethod,
+                                                 BindingFlags.InvokeMethod,
+                                                 Type.DefaultBinder,
+                                                 (BindingFlags.Public | BindingFlags.Instance),
+                                                 GetValuedParams(vars, variableDispenser));
                 }
-
-                object retValue = type.InvokeMember(AssemblyMethod,
-                                                      BindingFlags.InvokeMethod,
-                                                      Type.DefaultBinder,
-                                                      (BindingFlags.Static | BindingFlags.Public),
-                                                      GetValuedParams(vars, variableDispenser));
 
                 if (vars[OutPutVariable] != null && retValue != null)
                 {
                     vars[OutPutVariable].Value = retValue;
                 }
 
-
-                componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed.", string.Empty, 0,
+                componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.", string.Empty, 0,
                                                 ref refire);
             }
             catch (Exception ex)
