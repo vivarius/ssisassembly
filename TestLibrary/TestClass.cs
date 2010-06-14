@@ -32,9 +32,9 @@ namespace SSIS.TestLibrary
             returnedStringEx = returnedString + returnedString;
             try
             {
-                using (Stream stream = new FileStream(@"c:\testSSIS2.txt", FileMode.OpenOrCreate))
+                using (Stream stream = new FileStream("TestMethodEx" + @"c:\testSSIS2.txt", FileMode.OpenOrCreate))
                 {
-                    byte[] buffer = Encoding.ASCII.GetBytes(returnedString);
+                    byte[] buffer = Encoding.ASCII.GetBytes(returnedString + returnedStringEx);
 
                     stream.Write(buffer, 0, buffer.Length);
                     stream.Close();
@@ -46,15 +46,13 @@ namespace SSIS.TestLibrary
             }
         }
 
-        public void TestMethodEx2(string AppID, out string returnedString, ref string returnedStringEx)
+        public void TestMethodEx2(string AppID)
         {
-            returnedString = AppID + " returned value from package execution " + ConfigurationManager.AppSettings["Test"];
-            returnedStringEx = returnedString + returnedString;
             try
             {
                 using (Stream stream = new FileStream(@"c:\testSSIS2.txt", FileMode.OpenOrCreate))
                 {
-                    byte[] buffer = Encoding.ASCII.GetBytes(returnedString);
+                    byte[] buffer = Encoding.ASCII.GetBytes("TestMethodEx2" + AppID);
 
                     stream.Write(buffer, 0, buffer.Length);
                     stream.Close();

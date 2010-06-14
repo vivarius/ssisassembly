@@ -29,6 +29,10 @@ namespace SSISAssemblyExecutor
             _connections = cs.GetConnections();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public ContainerControl GetView()
         {
             return new frmAssembly(_taskHost, _connections);

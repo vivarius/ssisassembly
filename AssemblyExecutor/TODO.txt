@@ -1,2 +1,3 @@
-﻿Check if the class is an instance class
-check if one of the parameters's methods are 'ref' or 'out'
+﻿Check if the class is an instance class //donne
+Check if one of the parameters's methods are 'ref' or 'out' ///donne
+Try to do the same thing with a structure

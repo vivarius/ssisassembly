@@ -31,12 +31,11 @@ namespace SSISAssemblyExecutor
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmAssembly));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.label5 = new System.Windows.Forms.Label();
             this.cmbConnection = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cmbMethod = new System.Windows.Forms.ComboBox();
@@ -52,12 +51,13 @@ namespace SSISAssemblyExecutor
             this.linkCodeplex = new System.Windows.Forms.LinkLabel();
             this.pbCodeplex = new System.Windows.Forms.PictureBox();
             this.grdParameters = new System.Windows.Forms.DataGridView();
-            this.lbOutputValue = new System.Windows.Forms.Label();
-            this.cmbBoxReturnVariable = new System.Windows.Forms.ComboBox();
             this.grdColParams = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grdColDirection = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grdColVars = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.grdColExpression = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.lbOutputValue = new System.Windows.Forms.Label();
+            this.cmbBoxReturnVariable = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -98,7 +98,6 @@ namespace SSISAssemblyExecutor
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.label5);
             this.tabPage1.Controls.Add(this.cmbConnection);
             this.tabPage1.Controls.Add(this.label4);
             this.tabPage1.Controls.Add(this.cmbMethod);
@@ -115,22 +114,13 @@ namespace SSISAssemblyExecutor
             this.tabPage1.Text = "Assembly specifics";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(370, 18);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(46, 13);
-            this.label5.TabIndex = 35;
-            this.label5.Text = "1.0.0.71";
-            // 
             // cmbConnection
             // 
             this.cmbConnection.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbConnection.FormattingEnabled = true;
             this.cmbConnection.Location = new System.Drawing.Point(76, 15);
             this.cmbConnection.Name = "cmbConnection";
-            this.cmbConnection.Size = new System.Drawing.Size(288, 21);
+            this.cmbConnection.Size = new System.Drawing.Size(340, 21);
             this.cmbConnection.TabIndex = 34;
             this.cmbConnection.SelectedIndexChanged += new System.EventHandler(this.cmbConnection_SelectedIndexChanged);
             // 
@@ -149,7 +139,7 @@ namespace SSISAssemblyExecutor
             this.cmbMethod.FormattingEnabled = true;
             this.cmbMethod.Location = new System.Drawing.Point(76, 100);
             this.cmbMethod.Name = "cmbMethod";
-            this.cmbMethod.Size = new System.Drawing.Size(288, 21);
+            this.cmbMethod.Size = new System.Drawing.Size(340, 21);
             this.cmbMethod.TabIndex = 26;
             this.cmbMethod.SelectedIndexChanged += new System.EventHandler(this.cmbMethod_SelectedIndexChanged);
             // 
@@ -159,7 +149,7 @@ namespace SSISAssemblyExecutor
             this.cmbClasses.FormattingEnabled = true;
             this.cmbClasses.Location = new System.Drawing.Point(76, 74);
             this.cmbClasses.Name = "cmbClasses";
-            this.cmbClasses.Size = new System.Drawing.Size(288, 21);
+            this.cmbClasses.Size = new System.Drawing.Size(340, 21);
             this.cmbClasses.TabIndex = 25;
             this.cmbClasses.SelectedIndexChanged += new System.EventHandler(this.cmbClasses_SelectedIndexChanged);
             // 
@@ -169,7 +159,7 @@ namespace SSISAssemblyExecutor
             this.cmbNamespace.FormattingEnabled = true;
             this.cmbNamespace.Location = new System.Drawing.Point(76, 46);
             this.cmbNamespace.Name = "cmbNamespace";
-            this.cmbNamespace.Size = new System.Drawing.Size(288, 21);
+            this.cmbNamespace.Size = new System.Drawing.Size(340, 21);
             this.cmbNamespace.TabIndex = 24;
             this.cmbNamespace.SelectedIndexChanged += new System.EventHandler(this.cmbNamespace_SelectedIndexChanged);
             // 
@@ -282,24 +272,6 @@ namespace SSISAssemblyExecutor
             this.grdParameters.TabIndex = 24;
             this.grdParameters.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.grdParameters_CellContentClick);
             // 
-            // lbOutputValue
-            // 
-            this.lbOutputValue.AutoSize = true;
-            this.lbOutputValue.Location = new System.Drawing.Point(8, 370);
-            this.lbOutputValue.Name = "lbOutputValue";
-            this.lbOutputValue.Size = new System.Drawing.Size(69, 13);
-            this.lbOutputValue.TabIndex = 25;
-            this.lbOutputValue.Text = "Output Value";
-            // 
-            // cmbBoxReturnVariable
-            // 
-            this.cmbBoxReturnVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbBoxReturnVariable.FormattingEnabled = true;
-            this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 367);
-            this.cmbBoxReturnVariable.Name = "cmbBoxReturnVariable";
-            this.cmbBoxReturnVariable.Size = new System.Drawing.Size(350, 21);
-            this.cmbBoxReturnVariable.TabIndex = 26;
-            // 
             // grdColParams
             // 
             this.grdColParams.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -331,9 +303,9 @@ namespace SSISAssemblyExecutor
             // 
             // grdColExpression
             // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.Padding = new System.Windows.Forms.Padding(2);
-            this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(2);
+            this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle3;
             this.grdColExpression.HeaderText = "f(x)";
             this.grdColExpression.Name = "grdColExpression";
             this.grdColExpression.Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -341,12 +313,41 @@ namespace SSISAssemblyExecutor
             this.grdColExpression.ToolTipText = "Expressions...";
             this.grdColExpression.Width = 30;
             // 
+            // lbOutputValue
+            // 
+            this.lbOutputValue.AutoSize = true;
+            this.lbOutputValue.Location = new System.Drawing.Point(8, 370);
+            this.lbOutputValue.Name = "lbOutputValue";
+            this.lbOutputValue.Size = new System.Drawing.Size(69, 13);
+            this.lbOutputValue.TabIndex = 25;
+            this.lbOutputValue.Text = "Output Value";
+            // 
+            // cmbBoxReturnVariable
+            // 
+            this.cmbBoxReturnVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbBoxReturnVariable.FormattingEnabled = true;
+            this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 367);
+            this.cmbBoxReturnVariable.Name = "cmbBoxReturnVariable";
+            this.cmbBoxReturnVariable.Size = new System.Drawing.Size(350, 21);
+            this.cmbBoxReturnVariable.TabIndex = 26;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(404, 9);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(46, 13);
+            this.label5.TabIndex = 36;
+            this.label5.Text = "1.0.0.73";
+            this.label5.Visible = false;
+            // 
             // frmAssembly
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(453, 428);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.cmbBoxReturnVariable);
             this.Controls.Add(this.lbOutputValue);
             this.Controls.Add(this.grdParameters);
@@ -393,7 +394,6 @@ namespace SSISAssemblyExecutor
         private System.Windows.Forms.PictureBox pbCodeplex;
         public System.Windows.Forms.ComboBox cmbConnection;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.DataGridView grdParameters;
         private System.Windows.Forms.Label lbOutputValue;
         private ComboBox cmbBoxReturnVariable;
@@ -401,6 +401,7 @@ namespace SSISAssemblyExecutor
         private DataGridViewTextBoxColumn grdColDirection;
         private DataGridViewComboBoxColumn grdColVars;
         private DataGridViewButtonColumn grdColExpression;
+        private Label label5;
 
     }
 }

@@ -7,9 +7,8 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Controls;
-using Microsoft.SqlServer.Dts.Runtime.Wrapper;
-using TaskHost = Microsoft.SqlServer.Dts.Runtime.TaskHost;
-using Variable = Microsoft.SqlServer.Dts.Runtime.Variable;
+//using TaskHost = Microsoft.SqlServer.Dts.Runtime.TaskHost;
+//using Variable = Microsoft.SqlServer.Dts.Runtime.Variable;
 
 namespace SSISAssemblyExecutor
 {
@@ -43,14 +42,15 @@ namespace SSISAssemblyExecutor
 
         #region ctor
 
-        public frmAssembly(string FilePath)
-        {
-            InitializeComponent();
+        //for unit test pourposes
+        //public frmAssembly(string FilePath)
+        //{
+        //    InitializeComponent();
 
-            grdParameters.DataError += grdParameters_DataError;
+        //    grdParameters.DataError += grdParameters_DataError;
 
-            GetAssemblyInfo(FilePath);
-        }
+        //    GetAssemblyInfo(FilePath);
+        //}
 
         public frmAssembly(TaskHost taskHost, Connections connections)
         {
@@ -149,15 +149,13 @@ namespace SSISAssemblyExecutor
                             return;
                         }
 
-                        var expressionBuilder = ExpressionBuilder.Instantiate(_taskHost.Variables,
-                                                                                            _taskHost.VariableDispenser,
-                                                                                            Type.GetType((grdParameters.Rows[e.RowIndex].Cells[0]).Value.ToString().Split('=')[1].Trim()),
-                                                                                            string.Empty);
-
-                        if (expressionBuilder.ShowDialog() == DialogResult.OK)
+                        using (var expressionBuilder = ExpressionBuilder.Instantiate(_taskHost.Variables, _taskHost.VariableDispenser, Type.GetType((grdParameters.Rows[e.RowIndex].Cells[0]).Value.ToString().Split('=')[1].Trim()), string.Empty))
                         {
-                            ((DataGridViewComboBoxCell)grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1]).Items.Add(expressionBuilder.Expression);
-                            ((DataGridViewComboBoxCell)grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1]).Value = expressionBuilder.Expression;
+                            if (expressionBuilder.ShowDialog() == DialogResult.OK)
+                            {
+                                ((DataGridViewComboBoxCell)grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1]).Items.Add(expressionBuilder.Expression);
+                                ((DataGridViewComboBoxCell)grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1]).Value = expressionBuilder.Expression;
+                            }
                         }
                     }
                     break;
@@ -166,6 +164,7 @@ namespace SSISAssemblyExecutor
 
         private void btnOK_Click(object sender, EventArgs e)
         {
+            //Save the values
             _taskHost.Properties["AssemblyConnector"].SetValue(_taskHost, cmbConnection.Text);
             _taskHost.Properties["AssemblyPath"].SetValue(_taskHost, Convert.ToString(_connections[cmbConnection.Text].ConnectionString, System.Globalization.CultureInfo.InvariantCulture));
             _taskHost.Properties["AssemblyNamespace"].SetValue(_taskHost, Convert.ToString(cmbNamespace.Text, System.Globalization.CultureInfo.InvariantCulture));
@@ -200,6 +199,7 @@ namespace SSISAssemblyExecutor
             }
             catch (Exception e)
             {
+                DialogResult = DialogResult.Ignore;
                 MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Dispose();
                 Close();
@@ -308,9 +308,6 @@ namespace SSISAssemblyExecutor
         private DataGridViewComboBoxCell LoadVariables(ParameterInfo parameterInfo)
         {
             var comboBoxCell = new DataGridViewComboBoxCell();
-
-            //foreach (Variable variable in
-            //    Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType))
 
             foreach (Variable variable in Variables)
             {

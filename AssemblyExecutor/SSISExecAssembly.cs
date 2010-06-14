@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -8,8 +7,8 @@ using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using SSISAssemblyExecutor;
 using DTSExecResult = Microsoft.SqlServer.Dts.Runtime.DTSExecResult;
-using DTSProductLevel = Microsoft.SqlServer.Dts.Runtime.DTSProductLevel;
 using VariableDispenser = Microsoft.SqlServer.Dts.Runtime.VariableDispenser;
+using DTSProductLevel = Microsoft.SqlServer.Dts.Runtime.DTSProductLevel;
 
 namespace SSISAssemblyExecuter100.SSIS
 {
@@ -17,7 +16,7 @@ namespace SSISAssemblyExecuter100.SSIS
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISAssemblyExecutor.SSISExecAssemblyUIInterface" +
         ",SSISAssemblyExecuter100," +
-        "Version=1.0.0.71," +
+        "Version=1.0.0.73," +
         "Culture=Neutral," +
         "PublicKeyToken=bf357d0d3805f1fe",
         IconResource = "SSISAssemblyExecutor.SSISAssemblyExecutor.ico",
@@ -106,6 +105,15 @@ namespace SSISAssemblyExecuter100.SSIS
 
         #region Execute
 
+        /// <summary>
+        /// This method is a run-time method executed dtsexec.exe
+        /// </summary>
+        /// <param name="connections"></param>
+        /// <param name="variableDispenser"></param>
+        /// <param name="componentEvents"></param>
+        /// <param name="log"></param>
+        /// <param name="transaction"></param>
+        /// <returns></returns>
         public override DTSExecResult Execute(Connections connections, VariableDispenser variableDispenser,
                                               IDTSComponentEvents componentEvents, IDTSLogging log, object transaction)
         {
@@ -117,46 +125,65 @@ namespace SSISAssemblyExecuter100.SSIS
             componentEvents.FireInformation(0, "SSISAssembly", "Filename: " + connections[AssemblyConnector].ConnectionString, string.Empty, 0, ref refire);
             try
             {
+                //Get the path of the targeted file
                 AssemblyPath = connections[AssemblyConnector].ConnectionString;
+
+                //Inform us...
                 componentEvents.FireInformation(0, "SSISAssembly", "Starts executing method..." + AssemblyMethod, string.Empty, 0, ref refire);
 
+                //Load assembly from the given path
                 Assembly assembly = Assembly.LoadFrom(AssemblyPath);
 
                 if (assembly == null)
                     throw new Exception("Assembly instance is NULL");
 
+                //Get the type -Namespace.Class-
                 var type = ReflectionTools.GetTypeFromName(assembly, string.Format("{0}.{1}", AssemblyNamespace, AssemblyClass));
 
                 if (type == null)
                     throw new Exception("Assembly's type is NULL");
 
-                object retValue = null;
+                object retValue = null, instanceObject = null;
 
+                //Obtain your method information
                 MethodInfo methodInfo = type.GetMethod(AssemblyMethod);
 
-                if (methodInfo.IsStatic)
-                    retValue = type.InvokeMember(AssemblyMethod,
-                                                 BindingFlags.InvokeMethod,
-                                                 null,
-                                                 (BindingFlags.Static | BindingFlags.Public),
-                                                 GetValuedParams(vars, variableDispenser));
+                //Prepare your parameters to be passed as parameters
+                object[] paramObject = GetValuedParams(vars, variableDispenser, methodInfo);
 
-                else if (type.IsClass && !type.IsAbstract && !type.IsSealed)
+                BindingFlags bindingFlags = BindingFlags.Default;
+
+                //Check method type; if it's static...
+                if (methodInfo.IsStatic)
                 {
-                    ReflectionTools.CreateInstance(assembly, type);
+                    //Invoke static member
                     retValue = type.InvokeMember(AssemblyMethod,
-                                                 BindingFlags.InvokeMethod,
-                                                 Type.DefaultBinder,
-                                                 (BindingFlags.Public | BindingFlags.Instance),
-                                                 GetValuedParams(vars, variableDispenser));
+                                                     BindingFlags.InvokeMethod,
+                                                     null,
+                                                     BindingFlags.Static | BindingFlags.Public,
+                                                     paramObject);
                 }
 
+                //Check object type: it is a instantiable object (class) //TODO check a structure?
+                if (type.IsClass && !type.IsAbstract && !type.IsSealed)
+                {
+                    instanceObject = ReflectionTools.CreateInstance(assembly, type);
+                    //invoke instanciated member
+                    methodInfo.Invoke(instanceObject, paramObject);
+                }
+
+                //get returned value if it exists or is not null
                 if (vars[OutPutVariable] != null && retValue != null)
                 {
                     vars[OutPutVariable].Value = retValue;
                 }
 
-                componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.", string.Empty, 0,
+                //get OUT & REF values 
+                GetRefValueParams(methodInfo, paramObject);
+
+                //...finally:
+                componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.",
+                                                string.Empty, 0,
                                                 ref refire);
             }
             catch (Exception ex)
@@ -178,6 +205,34 @@ namespace SSISAssemblyExecuter100.SSIS
 
         #region Methods
 
+        /// <summary>
+        /// Get REF or OUT values obtained after the execution of the method 
+        /// </summary>
+        /// <param name="methodInfo"></param>
+        /// <param name="paramObject"></param>
+        private void GetRefValueParams(MethodInfo methodInfo, object[] paramObject)
+        {
+            int paramIndex = 0;
+            foreach (ParameterInfo parameterInfo in methodInfo.GetParameters())
+            {
+                var mappedParams = MappingParams.Split(';').ToArray();
+                foreach (string param in from param in mappedParams
+                                         where param.Length > 0
+                                         where param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name
+                                         where param.Split('|')[0].Split('=')[1].Trim().Contains("&")
+                                         select param)
+                {
+                    vars[param.Split('|')[1].Trim()].Value = paramObject[paramIndex];
+                    break;
+                }
+                paramIndex++;
+            }
+        }
+
+        /// <summary>
+        /// This methods recupers all needed variable saved in the component property 'MappingParams'
+        /// </summary>
+        /// <param name="variableDispenser"></param>
         private void GetNeededVariables(VariableDispenser variableDispenser)
         {
             try
@@ -212,7 +267,14 @@ namespace SSISAssemblyExecuter100.SSIS
             variableDispenser.GetVariables(ref vars);
         }
 
-        private object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
+        /// <summary>
+        /// This method evaluate expressions like @([System::TaskName] + [System::TaskID]) or any other operation created using 
+        /// ExpressionBuilder
+        /// </summary>
+        /// <param name="mappedParam"></param>
+        /// <param name="variableDispenser"></param>
+        /// <returns></returns>
+        private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
         {
             object variableObject = null;
 
@@ -225,18 +287,43 @@ namespace SSISAssemblyExecuter100.SSIS
             return variableObject;
         }
 
-        private object[] GetValuedParams(Variables vars, VariableDispenser variableDispenser)
+        /// <summary>
+        /// Prepare method's parameters that will be executed 
+        ///     It will recuperate the direct values
+        ///     It will make the interpretation of the expressions
+        ///     It will pass NULL value for REF Or OUT params
+        /// </summary>
+        /// <param name="vars"></param>
+        /// <param name="variableDispenser"></param>
+        /// <param name="methodInfo"></param>
+        /// <returns></returns>
+        private object[] GetValuedParams(Variables vars, VariableDispenser variableDispenser, MethodInfo methodInfo)
         {
-            var objects = new ArrayList();
+            object[] objects = null;
 
             try
             {
-                var mappedParams = MappingParams.Split(';');
-                foreach (var param in from pStr in mappedParams where pStr.Trim().Length != 0 select pStr.Split('|')[1])
+                ParameterInfo[] parameterInfos = methodInfo.GetParameters();
+
+                objects = new object[parameterInfos.Length];
+
+                int paramIndex = 0;
+                foreach (ParameterInfo parameterInfo in parameterInfos)
                 {
-                    objects.Add(!(param.Contains("@"))
-                                    ? vars[param].Value
-                                    : EvaluateExpression(param, variableDispenser));
+                    var mappedParams = MappingParams.Split(';').ToArray();
+                    foreach (string param in
+                        mappedParams.Where(param => param.Length > 0).Where(param => param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name))
+                    {
+                        objects[paramIndex] = param.Split('|')[1].Contains("@")
+                                                  ? EvaluateExpression(param.Split('|')[1], variableDispenser)
+                                                  : (!(parameterInfo.ParameterType.IsByRef || parameterInfo.IsOut))
+                                                        ? vars[param.Split('|')[1].Trim()].Value
+                                                        : null;
+
+                        paramIndex++;
+
+                        break;
+                    }
                 }
             }
             catch (Exception exception)
@@ -244,13 +331,14 @@ namespace SSISAssemblyExecuter100.SSIS
                 throw new Exception(exception.Message);
             }
 
-            return objects.ToArray();
+            return objects;
         }
 
         #endregion
 
         #region IDTSComponentPersist Members
 
+        //Get properties from package
         void IDTSComponentPersist.LoadFromXML(XmlElement node, IDTSInfoEvents infoEvents)
         {
             if (node.Name != "SSISExecAssembly")
@@ -274,6 +362,7 @@ namespace SSISAssemblyExecuter100.SSIS
             }
         }
 
+        //Save properties to package
         void IDTSComponentPersist.SaveToXML(XmlDocument doc, IDTSInfoEvents infoEvents)
         {
             XmlElement taskElement = doc.CreateElement(string.Empty, "SSISExecAssembly", string.Empty);

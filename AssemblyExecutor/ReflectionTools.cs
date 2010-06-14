@@ -9,27 +9,22 @@ namespace SSISAssemblyExecutor
         internal static object CreateInstanceFromAssemblyQualifiedName(string typeName)
         {
             Type type = Type.GetType(typeName);
-            if (type == null)
-                return (null);
-            Assembly asm = Assembly.GetAssembly(type);
-            object obj = asm.CreateInstance(type.ToString());
-            return (obj);
+            return type == null
+                    ? (null)
+                    : Assembly.GetAssembly(type).CreateInstance(type.ToString());
         }
 
         internal static object CreateInstance(Type type)
         {
-            Assembly asm = Assembly.GetAssembly(type);
-            object obj = asm.CreateInstance(type.ToString());
-            return (obj);
+            return Assembly.GetAssembly(type).CreateInstance(type.ToString());
         }
 
         internal static object CreateInstance(Assembly assembly, Type type)
         {
-            object obj = assembly.CreateInstance(type.ToString());
-            return (obj);
+            return assembly.CreateInstance(type.ToString());
         }
 
-        internal static Type GetTypeFromName(string TypeName)
+        private static Type GetTypeFromName(string TypeName)
         {
             Type type = Type.GetType(TypeName);
             if (type != null)
@@ -47,22 +42,16 @@ namespace SSISAssemblyExecutor
         internal static Type GetTypeFromName(Assembly assembly, string TypeName)
         {
             Type type = Type.GetType(TypeName);
-            if (type != null)
-                return type;
-
-            type = assembly.GetType(TypeName, false);
-
-            return type;
+            return type ?? assembly.GetType(TypeName, false);
         }
 
         internal static object CreateInstanceFromTypeName(string typeName, params object[] args)
         {
             object instance = null;
-            Type type = null;
 
             try
             {
-                type = GetTypeFromName(typeName);
+                Type type = GetTypeFromName(typeName);
                 if (type == null)
                     return null;
 
@@ -77,8 +66,7 @@ namespace SSISAssemblyExecutor
 
         internal static Stream GetEmbeddedResource(string assemblyName, string resourceName)
         {
-            Assembly asm = Assembly.Load(assemblyName);
-            return (asm.GetManifestResourceStream(resourceName));
+            return Assembly.Load(assemblyName).GetManifestResourceStream(resourceName);
         }
     }
 }
