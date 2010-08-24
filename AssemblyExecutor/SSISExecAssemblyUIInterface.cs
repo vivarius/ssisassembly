@@ -35,6 +35,7 @@ namespace SSISAssemblyExecutor
         /// <returns></returns>
         public ContainerControl GetView()
         {
+            //Show the property window
             return new frmAssembly(_taskHost, _connections);
         }
 

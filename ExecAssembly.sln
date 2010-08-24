@@ -20,7 +20,7 @@ Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 4
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs07.codeplex.com/
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = AssemblyExecutor\\SSISAssemblyExecutor.csproj
 		SccProjectName1 = AssemblyExecutor
@@ -43,29 +43,24 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C} = {76A3F7F9-3926-47D6-8AD6-8CCE3E69E993}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.ActiveCfg = Development
+		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.Build.0 = Development
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.ActiveCfg = Development

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -34,7 +35,7 @@ namespace SSISAssemblyExecuter100.SSIS
         #region Public Properties
         [Category("General"), Description("The connector associated with the task")]
         public string AssemblyConnector { get; set; }
-        [Category("General"), Description("The path to the assembly")]
+        [Category("General"), Description("The path to the assembly file")]
         public string AssemblyPath { get; set; }
         [Category("General"), Description("Source namespace")]
         public string AssemblyNamespace { get; set; }
@@ -74,6 +75,12 @@ namespace SSISAssemblyExecuter100.SSIS
                 IsBaseValid = false;
             }
 
+            if (!File.Exists(connections[AssemblyConnector].ConnectionString.Trim()))
+            {
+                componentEvents.FireError(0, "SSISExecAssembly", "Assembly doesn't exists at the specified path", "", 0);
+                IsBaseValid = false;
+            }
+
             if (string.IsNullOrEmpty(AssemblyConnector))
             {
                 componentEvents.FireError(0, "SSISExecAssembly", "A connector is required.", "", 0);
@@ -94,7 +101,7 @@ namespace SSISAssemblyExecuter100.SSIS
 
             if (string.IsNullOrEmpty(AssemblyMethod))
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "A method path is required.", "", 0);
+                componentEvents.FireError(0, "SSISExecAssembly", "A method to execute is required.", "", 0);
                 IsBaseValid = false;
             }
 
@@ -151,8 +158,6 @@ namespace SSISAssemblyExecuter100.SSIS
                 //Prepare your parameters to be passed as parameters
                 object[] paramObject = GetValuedParams(vars, variableDispenser, methodInfo);
 
-                BindingFlags bindingFlags = BindingFlags.Default;
-
                 //Check method type; if it's static...
                 if (methodInfo.IsStatic)
                 {
@@ -164,7 +169,7 @@ namespace SSISAssemblyExecuter100.SSIS
                                                      paramObject);
                 }
 
-                //Check object type: it is a instantiable object (class) //TODO check a structure?
+                //Check object type: it is a instantiable object (class) //TODO check within a  structure?
                 if (type.IsClass && !type.IsAbstract && !type.IsSealed)
                 {
                     instanceObject = ReflectionTools.CreateInstance(assembly, type);
@@ -178,17 +183,22 @@ namespace SSISAssemblyExecuter100.SSIS
                     vars[OutPutVariable].Value = retValue;
                 }
 
-                //get OUT & REF values 
+                // Get REF or OUT values obtained after the execution of the method 
                 GetRefValueParams(methodInfo, paramObject);
 
-                //...finally:
+                //...finally we log the successfull information
                 componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.",
                                                 string.Empty, 0,
                                                 ref refire);
             }
             catch (Exception ex)
             {
-                componentEvents.FireError(0, "SSISAssemblyTask", ex.ToString(), "", 0);
+                componentEvents.FireError(0,
+                                          "SSISAssemblyTask",
+                                          string.Format("Problem: {0}", 
+                                                        ex.Message),
+                                          "",
+                                          0);
             }
             finally
             {
@@ -213,9 +223,11 @@ namespace SSISAssemblyExecuter100.SSIS
         private void GetRefValueParams(MethodInfo methodInfo, object[] paramObject)
         {
             int paramIndex = 0;
+
             foreach (ParameterInfo parameterInfo in methodInfo.GetParameters())
             {
                 var mappedParams = MappingParams.Split(';').ToArray();
+
                 foreach (string param in from param in mappedParams
                                          where param.Length > 0
                                          where param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name
@@ -225,18 +237,19 @@ namespace SSISAssemblyExecuter100.SSIS
                     vars[param.Split('|')[1].Trim()].Value = paramObject[paramIndex];
                     break;
                 }
+
                 paramIndex++;
             }
         }
 
         /// <summary>
-        /// This methods recupers all needed variable saved in the component property 'MappingParams'
+        /// This method recupers all needed variable saved in the component property 'MappingParams'
         /// </summary>
         /// <param name="variableDispenser"></param>
         private void GetNeededVariables(VariableDispenser variableDispenser)
         {
             try
-            {   //Regex regex = new Regex(@"^@[\s*[a-zA-Z::\s]+\s*]$");
+            {
                 var mappedParams = MappingParams.Split(';');
 
                 for (int index = 0; index < mappedParams.Length - 1; index++)
@@ -288,7 +301,7 @@ namespace SSISAssemblyExecuter100.SSIS
         }
 
         /// <summary>
-        /// Prepare method's parameters that will be executed 
+        /// Prepares method's parameters that will be executed 
         ///     It will recuperate the direct values
         ///     It will make the interpretation of the expressions
         ///     It will pass NULL value for REF Or OUT params
@@ -348,13 +361,13 @@ namespace SSISAssemblyExecuter100.SSIS
 
             try
             {
-                AssemblyPath = node.Attributes.GetNamedItem("AssemblyPath").Value;
-                AssemblyConnector = node.Attributes.GetNamedItem("AssemblyConnector").Value;
-                AssemblyNamespace = node.Attributes.GetNamedItem("AssemblyNamespace").Value;
-                AssemblyClass = node.Attributes.GetNamedItem("AssemblyClass").Value;
-                AssemblyMethod = node.Attributes.GetNamedItem("AssemblyMethod").Value;
-                MappingParams = node.Attributes.GetNamedItem("MappingParams").Value;
-                OutPutVariable = node.Attributes.GetNamedItem("OutPutVariable").Value;
+                AssemblyPath = node.Attributes.GetNamedItem(NamedStringMembers.ASSEMBLY_PATH).Value;
+                AssemblyConnector = node.Attributes.GetNamedItem(NamedStringMembers.ASSEMBLY_CONNECTOR).Value;
+                AssemblyNamespace = node.Attributes.GetNamedItem(NamedStringMembers.ASSEMBLY_NAMESPACE).Value;
+                AssemblyClass = node.Attributes.GetNamedItem(NamedStringMembers.ASSEMBLY_CLASS).Value;
+                AssemblyMethod = node.Attributes.GetNamedItem(NamedStringMembers.ASSEMBLY_METHOD).Value;
+                MappingParams = node.Attributes.GetNamedItem(NamedStringMembers.MAPPING_PARAMS).Value;
+                OutPutVariable = node.Attributes.GetNamedItem(NamedStringMembers.OUTPUT_VARIABLE).Value;
             }
             catch
             {
@@ -367,25 +380,25 @@ namespace SSISAssemblyExecuter100.SSIS
         {
             XmlElement taskElement = doc.CreateElement(string.Empty, "SSISExecAssembly", string.Empty);
 
-            XmlAttribute assemblyConnector = doc.CreateAttribute(string.Empty, "AssemblyConnector", string.Empty);
+            XmlAttribute assemblyConnector = doc.CreateAttribute(string.Empty, NamedStringMembers.ASSEMBLY_CONNECTOR, string.Empty);
             assemblyConnector.Value = AssemblyConnector;
 
-            XmlAttribute assemblyPathAttribute = doc.CreateAttribute(string.Empty, "AssemblyPath", string.Empty);
+            XmlAttribute assemblyPathAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.ASSEMBLY_PATH, string.Empty);
             assemblyPathAttribute.Value = AssemblyPath;
 
-            XmlAttribute assemblyNamespaceAttribute = doc.CreateAttribute(string.Empty, "AssemblyNamespace", string.Empty);
+            XmlAttribute assemblyNamespaceAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.ASSEMBLY_NAMESPACE, string.Empty);
             assemblyNamespaceAttribute.Value = AssemblyNamespace;
 
-            XmlAttribute assemblyClassAttribute = doc.CreateAttribute(string.Empty, "AssemblyClass", string.Empty);
+            XmlAttribute assemblyClassAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.ASSEMBLY_CLASS, string.Empty);
             assemblyClassAttribute.Value = AssemblyClass;
 
-            XmlAttribute assemblyMethodAttribute = doc.CreateAttribute(string.Empty, "AssemblyMethod", string.Empty);
+            XmlAttribute assemblyMethodAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.ASSEMBLY_METHOD, string.Empty);
             assemblyMethodAttribute.Value = AssemblyMethod;
 
-            XmlAttribute mappingParamsAttribute = doc.CreateAttribute(string.Empty, "MappingParams", string.Empty);
+            XmlAttribute mappingParamsAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.MAPPING_PARAMS, string.Empty);
             mappingParamsAttribute.Value = MappingParams;
 
-            XmlAttribute outPutVariableAttribute = doc.CreateAttribute(string.Empty, "OutPutVariable", string.Empty);
+            XmlAttribute outPutVariableAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.OUTPUT_VARIABLE, string.Empty);
             outPutVariableAttribute.Value = OutPutVariable;
 
             taskElement.Attributes.Append(assemblyPathAttribute);

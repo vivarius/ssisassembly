@@ -7,8 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Controls;
-//using TaskHost = Microsoft.SqlServer.Dts.Runtime.TaskHost;
-//using Variable = Microsoft.SqlServer.Dts.Runtime.Variable;
+using SSISAssemblyExecuter100.SSIS;
 
 namespace SSISAssemblyExecutor
 {
@@ -42,16 +41,6 @@ namespace SSISAssemblyExecutor
 
         #region ctor
 
-        //for unit test pourposes
-        //public frmAssembly(string FilePath)
-        //{
-        //    InitializeComponent();
-
-        //    grdParameters.DataError += grdParameters_DataError;
-
-        //    GetAssemblyInfo(FilePath);
-        //}
-
         public frmAssembly(TaskHost taskHost, Connections connections)
         {
             InitializeComponent();
@@ -68,7 +57,7 @@ namespace SSISAssemblyExecutor
             LoadFileConnections();
 
 
-            if (_taskHost.Properties["AssemblyConnector"].GetValue(_taskHost) == null)
+            if (_taskHost.Properties[NamedStringMembers.ASSEMBLY_CONNECTOR].GetValue(_taskHost) == null)
                 return;
 
             cmbConnection.SelectedIndexChanged -= cmbConnection_SelectedIndexChanged;
@@ -79,7 +68,7 @@ namespace SSISAssemblyExecutor
             {
                 try
                 {
-                    var mappingParams = _taskHost.Properties["MappingParams"].GetValue(_taskHost).ToString().Split(';');
+                    var mappingParams = _taskHost.Properties[NamedStringMembers.MAPPING_PARAMS].GetValue(_taskHost).ToString().Split(';');
 
                     foreach (string mappingParam in mappingParams)
                     {
@@ -91,13 +80,13 @@ namespace SSISAssemblyExecutor
                     //it will continue
                 }
 
-                cmbConnection.SelectedIndex = cmbConnection.FindString(_taskHost.Properties["AssemblyConnector"].GetValue(_taskHost).ToString());
-                GetAssemblyInfo(_taskHost.Properties["AssemblyPath"].GetValue(_taskHost).ToString());
-                cmbNamespace.SelectedIndex = cmbNamespace.FindString(_taskHost.Properties["AssemblyNamespace"].GetValue(_taskHost).ToString());
+                cmbConnection.SelectedIndex = cmbConnection.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_CONNECTOR].GetValue(_taskHost).ToString());
+                GetAssemblyInfo(_taskHost.Properties[NamedStringMembers.ASSEMBLY_PATH].GetValue(_taskHost).ToString());
+                cmbNamespace.SelectedIndex = cmbNamespace.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].GetValue(_taskHost).ToString());
                 GetAssemblyClasses(cmbNamespace.Text);
-                cmbClasses.SelectedIndex = cmbClasses.FindString(_taskHost.Properties["AssemblyClass"].GetValue(_taskHost).ToString());
+                cmbClasses.SelectedIndex = cmbClasses.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].GetValue(_taskHost).ToString());
                 GetAssemblyMethods(cmbNamespace.Text, cmbClasses.Text);
-                cmbMethod.SelectedIndex = cmbMethod.FindString(_taskHost.Properties["AssemblyMethod"].GetValue(_taskHost).ToString());
+                cmbMethod.SelectedIndex = cmbMethod.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_METHOD].GetValue(_taskHost).ToString());
             }
             catch
             {
@@ -111,11 +100,6 @@ namespace SSISAssemblyExecutor
         #endregion
 
         #region Events
-
-        void grdParameters_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            MessageBox.Show(e.Exception.Message);
-        }
 
         private void cmbConnection_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -145,7 +129,7 @@ namespace SSISAssemblyExecutor
                     {
                         if ((grdParameters.Rows[e.RowIndex].Cells[1]).Value.ToString() != ParameterType.In.ToString("g"))
                         {
-                            MessageBox.Show("You're not allowed to specify an expression for an OUT or REF type parameter", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            MessageBox.Show(@"You're not allowed to specify an expression for an OUT or REF type parameter", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                             return;
                         }
 
@@ -165,11 +149,11 @@ namespace SSISAssemblyExecutor
         private void btnOK_Click(object sender, EventArgs e)
         {
             //Save the values
-            _taskHost.Properties["AssemblyConnector"].SetValue(_taskHost, cmbConnection.Text);
-            _taskHost.Properties["AssemblyPath"].SetValue(_taskHost, Convert.ToString(_connections[cmbConnection.Text].ConnectionString, System.Globalization.CultureInfo.InvariantCulture));
-            _taskHost.Properties["AssemblyNamespace"].SetValue(_taskHost, Convert.ToString(cmbNamespace.Text, System.Globalization.CultureInfo.InvariantCulture));
-            _taskHost.Properties["AssemblyClass"].SetValue(_taskHost, Convert.ToString(cmbClasses.Text, System.Globalization.CultureInfo.InvariantCulture));
-            _taskHost.Properties["AssemblyMethod"].SetValue(_taskHost, Convert.ToString(cmbMethod.Text, System.Globalization.CultureInfo.InvariantCulture));
+            _taskHost.Properties[NamedStringMembers.ASSEMBLY_CONNECTOR].SetValue(_taskHost, cmbConnection.Text);
+            _taskHost.Properties[NamedStringMembers.ASSEMBLY_PATH].SetValue(_taskHost, Convert.ToString(_connections[cmbConnection.Text].ConnectionString, System.Globalization.CultureInfo.InvariantCulture));
+            _taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].SetValue(_taskHost, Convert.ToString(cmbNamespace.Text, System.Globalization.CultureInfo.InvariantCulture));
+            _taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].SetValue(_taskHost, Convert.ToString(cmbClasses.Text, System.Globalization.CultureInfo.InvariantCulture));
+            _taskHost.Properties[NamedStringMembers.ASSEMBLY_METHOD].SetValue(_taskHost, Convert.ToString(cmbMethod.Text, System.Globalization.CultureInfo.InvariantCulture));
 
             StringBuilder stringBuilder = new StringBuilder();
 
@@ -178,8 +162,8 @@ namespace SSISAssemblyExecutor
                 stringBuilder.Append(row.Cells[0].Value + "|" + row.Cells[2].Value + ";");
             }
 
-            _taskHost.Properties["MappingParams"].SetValue(_taskHost, stringBuilder.ToString());
-            _taskHost.Properties["OutPutVariable"].SetValue(_taskHost, cmbBoxReturnVariable.Text);
+            _taskHost.Properties[NamedStringMembers.MAPPING_PARAMS].SetValue(_taskHost, stringBuilder.ToString());
+            _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].SetValue(_taskHost, cmbBoxReturnVariable.Text);
         }
 
         #endregion
@@ -295,7 +279,7 @@ namespace SSISAssemblyExecutor
                 row.Cells["grdColVars"] = LoadVariables(parameterInfo);
 
                 row.Cells["grdColExpression"] = new DataGridViewButtonCell();
-                
+
             }
 
             string selectedText = string.Empty;
@@ -311,7 +295,7 @@ namespace SSISAssemblyExecutor
 
             foreach (Variable variable in Variables)
             {
-                if (parameterInfo.ParameterType.IsByRef && variable.DataType == TypeCode.Object 
+                if (parameterInfo.ParameterType.IsByRef && variable.DataType == TypeCode.Object
                  || Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType)
                 {
                     comboBoxCell.Items.Add(variable.Name);
@@ -339,15 +323,16 @@ namespace SSISAssemblyExecutor
                 comboBox.Items.Add(variable.Name);
             }
 
-            if (isFirstLoad && _taskHost.Properties["OutPutVariable"] != null && _taskHost.Properties["OutPutVariable"].GetValue(_taskHost) != null)
+            if (isFirstLoad && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE] != null && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].GetValue(_taskHost) != null)
             {
-                selectedText = _taskHost.Properties["OutPutVariable"].GetValue(_taskHost).ToString();
+                selectedText = _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].GetValue(_taskHost).ToString();
                 isFirstLoad = false;
             }
 
             return comboBox;
         }
 
+        //Load defined connection
         private void LoadFileConnections()
         {
             foreach (var connection in Connections)
@@ -359,32 +344,3 @@ namespace SSISAssemblyExecutor
         #endregion
     }
 }
-
-
-//public void LoadPredefinedValues(string Namespace, string Class, string Method)
-//{
-//    cmbNamespace.SelectedItem = Namespace;
-//    cmbClasses.SelectedItem = Class;
-//    cmbMethod.SelectedItem = Method;
-//}
-
-//private void LoadVariablesLists()
-//{
-//    foreach (var variable in
-//        Variables.Cast<Variable>().Where(variable => variable.DataType == TypeCode.String && !variable.SystemVariable))
-//    {
-//        cmbNamespaceVariable.Items.Add(variable.Name);
-//        cmbClassVariable.Items.Add(variable.Name);
-//        cmbMethodVariable.Items.Add(variable.Name);
-//    }
-//}
-//private bool IsParamAppID(ParameterInfo[] parameterInfos)
-//        {
-//            if (parameterInfos != null)
-//                return (parameterInfos.Length == 0)
-//                           ? true
-//                           : (parameterInfos.Length == 1 && parameterInfos[0].ParameterType == typeof(string))
-//                                 ? true
-//                                 : false;
-//            return true;
-//        }

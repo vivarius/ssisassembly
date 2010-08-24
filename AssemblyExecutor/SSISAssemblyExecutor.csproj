@@ -83,6 +83,7 @@
     <Compile Include="frmAssembly.designer.cs">
       <DependentUpon>frmAssembly.cs</DependentUpon>
     </Compile>
+    <Compile Include="NamedItems.cs" />
     <Compile Include="Objects.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
