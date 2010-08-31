@@ -17,7 +17,7 @@ namespace SSISAssemblyExecuter100.SSIS
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISAssemblyExecutor.SSISExecAssemblyUIInterface" +
         ",SSISAssemblyExecuter100," +
-        "Version=1.0.0.73," +
+        "Version=1.0.0.74," +
         "Culture=Neutral," +
         "PublicKeyToken=bf357d0d3805f1fe",
         IconResource = "SSISAssemblyExecutor.SSISAssemblyExecutor.ico",

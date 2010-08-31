@@ -338,7 +338,7 @@ namespace SSISAssemblyExecutor
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(46, 13);
             this.label5.TabIndex = 36;
-            this.label5.Text = "1.0.0.73";
+            this.label5.Text = "1.0.0.74";
             this.label5.Visible = false;
             // 
             // frmAssembly
