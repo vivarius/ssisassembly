@@ -174,7 +174,7 @@ namespace SSISAssemblyExecuter100.SSIS
                 {
                     instanceObject = ReflectionTools.CreateInstance(assembly, type);
                     //invoke instanciated member
-                    methodInfo.Invoke(instanceObject, paramObject);
+                    retValue = methodInfo.Invoke(instanceObject, paramObject);
                 }
 
                 //get returned value if it exists or is not null
