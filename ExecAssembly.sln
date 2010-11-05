@@ -5,13 +5,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSSIS", "TestSSIS", "{76
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSISAssemblyExecutor", "AssemblyExecutor\SSISAssemblyExecutor.csproj", "{70D61E07-4388-40B0-A0D7-5836BC463AD0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{373D05CF-6764-4B72-A579-DE484F102565}"
-	ProjectSection(SolutionItems) = preProject
-		ExecAssembly.vsmdi = ExecAssembly.vsmdi
-		Local.testsettings = Local.testsettings
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLibrary", "TestLibrary\TestLibrary.csproj", "{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}"
 EndProject
 Global
