@@ -15,11 +15,11 @@ namespace SSISExecuteAssemblyTask100.SSIS
 {
     [DtsTask(
         DisplayName = "Execute Assembly Task",
-        UITypeName = "SSISExecuteAssemblyTask100.SSISExecAssemblyUIInterface" +
+        UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.0.203," +
+        "Version=1.0.0.206," +
         "Culture=Neutral," +
-        "PublicKeyToken=bf357d0d3805f1fe",
+        "PublicKeyToken=99d80f2884c4916d",
         IconResource = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTask.ico",
         RequiredProductLevel = DTSProductLevel.Enterprise,
         TaskContact = "Cosmin VLASIU -> cosmin.vlasiu@gmail.com"
@@ -112,12 +112,12 @@ namespace SSISExecuteAssemblyTask100.SSIS
         #region Execute
 
         /// <summary>
-        /// This method is a run-time method executed dtsexec.exe
+        /// 
         /// </summary>
-        /// <param name="connections"></param>
-        /// <param name="variableDispenser"></param>
-        /// <param name="componentEvents"></param>
-        /// <param name="log"></param>
+        /// <param name="connections">Get the list of all connectors</param>
+        /// <param name="variableDispenser">Variables Handler</param>
+        /// <param name="componentEvents">Fire & Log Messages and exceptions</param>
+        /// <param name="log">Log Messages</param>
         /// <param name="transaction"></param>
         /// <returns></returns>
         public override DTSExecResult Execute(Connections connections, VariableDispenser variableDispenser,

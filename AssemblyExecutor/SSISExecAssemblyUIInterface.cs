@@ -6,7 +6,7 @@ using SSISExecuteAssemblyTask100.SSIS;
 
 namespace SSISExecuteAssemblyTask100
 {
-    class SSISExecAssemblyUIInterface : IDtsTaskUI
+    class SSISExecuteAssemblyTaskUIInterface : IDtsTaskUI
     {
         #region Private Variables
 
@@ -15,7 +15,7 @@ namespace SSISExecuteAssemblyTask100
         #endregion
 
         #region Constructor
-        public SSISExecAssemblyUIInterface()
+        public SSISExecuteAssemblyTaskUIInterface()
         {
         }
 
@@ -26,7 +26,7 @@ namespace SSISExecuteAssemblyTask100
         public void Initialize(TaskHost taskHost, IServiceProvider serviceProvider)
         {
             _taskHost = taskHost;
-            IDtsConnectionService cs = serviceProvider.GetService(typeof (IDtsConnectionService)) as IDtsConnectionService;
+            IDtsConnectionService cs = serviceProvider.GetService(typeof(IDtsConnectionService)) as IDtsConnectionService;
             _connections = cs.GetConnections();
         }
 
