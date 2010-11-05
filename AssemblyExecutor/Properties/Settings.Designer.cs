@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SSISAssemblyExecuter100.SSIS.Properties {
+namespace SSISExecuteAssemblyTask100.SSIS.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

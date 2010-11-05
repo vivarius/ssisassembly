@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Controls;
-using SSISAssemblyExecuter100.SSIS;
 
-namespace SSISAssemblyExecutor
+namespace SSISExecuteAssemblyTask100.SSIS
 {
     public partial class frmAssembly : Form
     {
-        private enum ParameterType
+        private enum ParameterDirection
         {
-            In, Out, Ref
+            In, Out
         }
 
         #region Private Properties
-        private Assembly assembly;
-        private TaskHost _taskHost;
-        private Connections _connections;
-        private Dictionary<string, string> paramsManager = new Dictionary<string, string>();
+        private Assembly _assembly;
+        private readonly TaskHost _taskHost;
+        private readonly Connections _connections;
+        private readonly Dictionary<string, string> _paramsManager = new Dictionary<string, string>();
         private bool isFirstLoad = false;
         #endregion
 
@@ -68,16 +68,16 @@ namespace SSISAssemblyExecutor
             {
                 try
                 {
-                    var mappingParams = _taskHost.Properties[NamedStringMembers.MAPPING_PARAMS].GetValue(_taskHost).ToString().Split(';');
+                    var mappingParams = _taskHost.Properties[NamedStringMembers.MAPPING_PARAMS].GetValue(_taskHost).ToString().Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
                     foreach (string mappingParam in mappingParams)
                     {
-                        paramsManager.Add(mappingParam.Split('|')[0], mappingParam.Split('|')[1]);
+                        _paramsManager.Add(mappingParam.Split('|')[0], mappingParam.Split('|')[1]);
                     }
                 }
-                catch
+                catch (Exception exception)
                 {
-                    //it will continue
+                    MessageBox.Show(exception.Message);
                 }
 
                 cmbConnection.SelectedIndex = cmbConnection.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_CONNECTOR].GetValue(_taskHost).ToString());
@@ -86,11 +86,14 @@ namespace SSISAssemblyExecutor
                 GetAssemblyClasses(cmbNamespace.Text);
                 cmbClasses.SelectedIndex = cmbClasses.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].GetValue(_taskHost).ToString());
                 GetAssemblyMethods(cmbNamespace.Text, cmbClasses.Text);
-                cmbMethod.SelectedIndex = cmbMethod.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_METHOD].GetValue(_taskHost).ToString());
+
+                SelectTheRightMethod();
+
+                txConfigurationFile.Text = _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].GetValue(_taskHost).ToString();
             }
-            catch
+            catch (Exception exception)
             {
-                //it will continue
+                MessageBox.Show(exception.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             cmbConnection.SelectedIndexChanged += cmbConnection_SelectedIndexChanged;
@@ -127,7 +130,7 @@ namespace SSISAssemblyExecutor
             {
                 case 3:
                     {
-                        if ((grdParameters.Rows[e.RowIndex].Cells[1]).Value.ToString() != ParameterType.In.ToString("g"))
+                        if ((grdParameters.Rows[e.RowIndex].Cells[1]).Value.ToString() != ParameterDirection.In.ToString("g"))
                         {
                             MessageBox.Show(@"You're not allowed to specify an expression for an OUT or REF type parameter", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                             return;
@@ -138,11 +141,26 @@ namespace SSISAssemblyExecutor
                             if (expressionBuilder.ShowDialog() == DialogResult.OK)
                             {
                                 ((DataGridViewComboBoxCell)grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1]).Items.Add(expressionBuilder.Expression);
-                                ((DataGridViewComboBoxCell)grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1]).Value = expressionBuilder.Expression;
+                                grdParameters.Rows[e.RowIndex].Cells[e.ColumnIndex - 1].Value = expressionBuilder.Expression;
                             }
                         }
                     }
                     break;
+            }
+        }
+
+        private void btConfigFile_Click(object sender, EventArgs e)
+        {
+            using (var openFileDialog = new OpenFileDialog
+            {
+                Filter = @"*.config|*.config",
+                InitialDirectory = Path.GetDirectoryName(_connections[cmbConnection.Text].ConnectionString)
+            })
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txConfigurationFile.Text = openFileDialog.FileName;
+                }
             }
         }
 
@@ -154,12 +172,13 @@ namespace SSISAssemblyExecutor
             _taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].SetValue(_taskHost, Convert.ToString(cmbNamespace.Text, System.Globalization.CultureInfo.InvariantCulture));
             _taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].SetValue(_taskHost, Convert.ToString(cmbClasses.Text, System.Globalization.CultureInfo.InvariantCulture));
             _taskHost.Properties[NamedStringMembers.ASSEMBLY_METHOD].SetValue(_taskHost, Convert.ToString(cmbMethod.Text, System.Globalization.CultureInfo.InvariantCulture));
+            _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].SetValue(_taskHost, Convert.ToString(txConfigurationFile.Text, System.Globalization.CultureInfo.InvariantCulture));
 
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
 
             foreach (DataGridViewRow row in grdParameters.Rows)
             {
-                stringBuilder.Append(row.Cells[0].Value + "|" + row.Cells[2].Value + ";");
+                stringBuilder.Append(row.Cells[0].Value + "|" + row.Cells[2].Value + "|" + row.Cells[1].Value + ";");
             }
 
             _taskHost.Properties[NamedStringMembers.MAPPING_PARAMS].SetValue(_taskHost, stringBuilder.ToString());
@@ -170,6 +189,38 @@ namespace SSISAssemblyExecutor
 
         #region Methods
 
+        private void SelectTheRightMethod()
+        {
+            int index = 0;
+
+            foreach (var cmbItem in cmbMethod.Items)
+            {
+                if ((string)((ComboBoxObjectComboItem)cmbItem).DisplayMember == (string)_taskHost.Properties[NamedStringMembers.ASSEMBLY_METHOD].GetValue(_taskHost))
+                {
+                    Type type = _assembly.GetType(string.Format("{0}.{1}",
+                                                                _taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].GetValue(_taskHost),
+                                                                _taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].GetValue(_taskHost)));
+
+                    var paramTypes = new Type[_paramsManager.Count];
+
+                    int counter = 0;
+                    foreach (var parameter in _paramsManager)
+                        paramTypes[counter++] = Type.GetType(parameter.Key.Split('=')[1].Trim());
+
+                    MethodInfo methodInfo = type.GetMethod((string)((ComboBoxObjectComboItem)cmbItem).DisplayMember, paramTypes);
+
+                    if (methodInfo != null)
+                        if (methodInfo == ((ComboBoxObjectComboItem)cmbItem).ValueMemeber)
+                        {
+                            cmbMethod.SelectedIndex = index;
+                            break;
+                        }
+
+                }
+                index++;
+            }
+        }
+
         private void GetAssemblyInfo(string filePath)
         {
             cmbNamespace.Items.Clear();
@@ -178,13 +229,13 @@ namespace SSISAssemblyExecutor
 
             try
             {
-                assembly = Assembly.LoadFrom(filePath);
+                _assembly = Assembly.LoadFrom(filePath);
                 GetAssemblyNamespace();
             }
             catch (Exception e)
             {
                 DialogResult = DialogResult.Ignore;
-                MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Dispose();
                 Close();
             }
@@ -201,7 +252,7 @@ namespace SSISAssemblyExecutor
             var arrayList = new ArrayList();
 
             foreach (Type type in
-                assembly.GetTypes().Where(type => !arrayList.Contains(type.Namespace)).Where(type => type.Namespace != null))
+                _assembly.GetTypes().Where(type => !arrayList.Contains(type.Namespace)).Where(type => type.Namespace != null))
             {
                 arrayList.Add(type.Namespace);
                 cmbNamespace.Items.Add(type.Namespace);
@@ -211,7 +262,7 @@ namespace SSISAssemblyExecutor
             Cursor = Cursors.Arrow;
         }
 
-        private void GetAssemblyClasses(string Namespace)
+        private void GetAssemblyClasses(string @namespace)
         {
             Cursor = Cursors.WaitCursor;
 
@@ -220,7 +271,7 @@ namespace SSISAssemblyExecutor
             grdParameters.Rows.Clear();
 
             var arrayList = new ArrayList();
-            foreach (Type type in assembly.GetTypes().Where(type => Namespace == type.Namespace && type.IsClass && type.IsPublic && !type.IsAbstract && !type.IsInterface).Where(type => !arrayList.Contains(type.Name)))
+            foreach (Type type in _assembly.GetTypes().Where(type => @namespace == type.Namespace && type.IsClass && type.IsPublic && !type.IsAbstract && !type.IsInterface).Where(type => !arrayList.Contains(type.Name)))
             {
                 arrayList.Add(type.Name);
                 cmbClasses.Items.Add(type.Name);
@@ -229,14 +280,14 @@ namespace SSISAssemblyExecutor
             Cursor = Cursors.Arrow;
         }
 
-        private void GetAssemblyMethods(string Namespace, string Classes)
+        private void GetAssemblyMethods(string @namespace, string classes)
         {
             Cursor = Cursors.WaitCursor;
 
             cmbMethod.Items.Clear();
             grdParameters.Rows.Clear();
-            foreach (MethodInfo method in from type in assembly.GetTypes()
-                                          where Namespace == type.Namespace && type.Name == Classes
+            foreach (MethodInfo method in from type in _assembly.GetTypes()
+                                          where @namespace == type.Namespace && type.Name == classes
                                           select type.GetMethods()
                                               into methodName
                                               from method in methodName
@@ -272,8 +323,8 @@ namespace SSISAssemblyExecutor
                 row.Cells["grdColDirection"] = new DataGridViewTextBoxCell
                                                    {
                                                        Value = (!parameterInfo.ParameterType.IsByRef)
-                                                                   ? ParameterType.In.ToString("g")
-                                                                   : ParameterType.Out.ToString("g")
+                                                                   ? ParameterDirection.In.ToString("g")
+                                                                   : ParameterDirection.Out.ToString("g")
                                                    };
 
                 row.Cells["grdColVars"] = LoadVariables(parameterInfo);
@@ -302,12 +353,12 @@ namespace SSISAssemblyExecutor
                 }
             }
 
-            if (isFirstLoad && paramsManager != null && paramsManager.Count > 0)
+            if (isFirstLoad && _paramsManager != null && _paramsManager.Count > 0)
             {
-                if (!comboBoxCell.Items.Contains(paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName]))
-                    comboBoxCell.Items.Add(paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName]);
+                if (!comboBoxCell.Items.Contains(_paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName]))
+                    comboBoxCell.Items.Add(_paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName]);
 
-                comboBoxCell.Value = paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName];
+                comboBoxCell.Value = _paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName];
             }
 
             return comboBoxCell;

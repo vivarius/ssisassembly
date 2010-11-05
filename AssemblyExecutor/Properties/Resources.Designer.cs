@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SSISAssemblyExecuter100.SSIS.Properties {
+namespace SSISExecuteAssemblyTask100.SSIS.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace SSISAssemblyExecuter100.SSIS.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SSISAssemblyExecuter100.SSIS.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SSISExecuteAssemblyTask100.SSIS.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

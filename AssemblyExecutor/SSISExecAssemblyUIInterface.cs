@@ -2,8 +2,9 @@
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Design;
+using SSISExecuteAssemblyTask100.SSIS;
 
-namespace SSISAssemblyExecutor
+namespace SSISExecuteAssemblyTask100
 {
     class SSISExecAssemblyUIInterface : IDtsTaskUI
     {

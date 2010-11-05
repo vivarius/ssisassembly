@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace SSISAssemblyExecutor
+namespace SSISExecuteAssemblyTask100.SSIS
 {
     partial class frmAssembly
     {
@@ -31,11 +31,14 @@ namespace SSISAssemblyExecutor
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmAssembly));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btConfigFile = new System.Windows.Forms.Button();
+            this.txConfigurationFile = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.cmbConnection = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cmbMethod = new System.Windows.Forms.ComboBox();
@@ -68,7 +71,7 @@ namespace SSISAssemblyExecutor
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(366, 393);
+            this.btnCancel.Location = new System.Drawing.Point(366, 424);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 21;
@@ -78,7 +81,7 @@ namespace SSISAssemblyExecutor
             // btnOK
             // 
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(285, 393);
+            this.btnOK.Location = new System.Drawing.Point(285, 424);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 22;
@@ -93,11 +96,14 @@ namespace SSISAssemblyExecutor
             this.tabControl1.Location = new System.Drawing.Point(11, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(430, 172);
+            this.tabControl1.Size = new System.Drawing.Size(430, 203);
             this.tabControl1.TabIndex = 23;
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.btConfigFile);
+            this.tabPage1.Controls.Add(this.txConfigurationFile);
+            this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.cmbConnection);
             this.tabPage1.Controls.Add(this.label4);
             this.tabPage1.Controls.Add(this.cmbMethod);
@@ -109,10 +115,37 @@ namespace SSISAssemblyExecutor
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(422, 146);
+            this.tabPage1.Size = new System.Drawing.Size(422, 177);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Assembly specifics";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btConfigFile
+            // 
+            this.btConfigFile.Location = new System.Drawing.Point(392, 126);
+            this.btConfigFile.Name = "btConfigFile";
+            this.btConfigFile.Size = new System.Drawing.Size(24, 23);
+            this.btConfigFile.TabIndex = 37;
+            this.btConfigFile.Text = "...";
+            this.btConfigFile.UseVisualStyleBackColor = true;
+            this.btConfigFile.Click += new System.EventHandler(this.btConfigFile_Click);
+            // 
+            // txConfigurationFile
+            // 
+            this.txConfigurationFile.Location = new System.Drawing.Point(76, 127);
+            this.txConfigurationFile.Name = "txConfigurationFile";
+            this.txConfigurationFile.Size = new System.Drawing.Size(310, 20);
+            this.txConfigurationFile.TabIndex = 36;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label1.Location = new System.Drawing.Point(6, 133);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(56, 13);
+            this.label1.TabIndex = 35;
+            this.label1.Text = "Config. file";
             // 
             // cmbConnection
             // 
@@ -203,7 +236,7 @@ namespace SSISAssemblyExecutor
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(422, 146);
+            this.tabPage2.Size = new System.Drawing.Size(422, 177);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Info";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -265,7 +298,7 @@ namespace SSISAssemblyExecutor
             this.grdColDirection,
             this.grdColVars,
             this.grdColExpression});
-            this.grdParameters.Location = new System.Drawing.Point(11, 190);
+            this.grdParameters.Location = new System.Drawing.Point(11, 221);
             this.grdParameters.Name = "grdParameters";
             this.grdParameters.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.grdParameters.Size = new System.Drawing.Size(430, 160);
@@ -303,9 +336,9 @@ namespace SSISAssemblyExecutor
             // 
             // grdColExpression
             // 
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(2);
-            this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.Padding = new System.Windows.Forms.Padding(2);
+            this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle2;
             this.grdColExpression.HeaderText = "f(x)";
             this.grdColExpression.Name = "grdColExpression";
             this.grdColExpression.Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -316,7 +349,7 @@ namespace SSISAssemblyExecutor
             // lbOutputValue
             // 
             this.lbOutputValue.AutoSize = true;
-            this.lbOutputValue.Location = new System.Drawing.Point(8, 370);
+            this.lbOutputValue.Location = new System.Drawing.Point(8, 401);
             this.lbOutputValue.Name = "lbOutputValue";
             this.lbOutputValue.Size = new System.Drawing.Size(69, 13);
             this.lbOutputValue.TabIndex = 25;
@@ -326,7 +359,7 @@ namespace SSISAssemblyExecutor
             // 
             this.cmbBoxReturnVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBoxReturnVariable.FormattingEnabled = true;
-            this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 367);
+            this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 398);
             this.cmbBoxReturnVariable.Name = "cmbBoxReturnVariable";
             this.cmbBoxReturnVariable.Size = new System.Drawing.Size(350, 21);
             this.cmbBoxReturnVariable.TabIndex = 26;
@@ -338,7 +371,7 @@ namespace SSISAssemblyExecutor
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(46, 13);
             this.label5.TabIndex = 36;
-            this.label5.Text = "1.0.0.74";
+            this.label5.Text = "1.0.0.203";
             this.label5.Visible = false;
             // 
             // frmAssembly
@@ -346,7 +379,7 @@ namespace SSISAssemblyExecutor
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(453, 428);
+            this.ClientSize = new System.Drawing.Size(453, 458);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.cmbBoxReturnVariable);
             this.Controls.Add(this.lbOutputValue);
@@ -402,6 +435,9 @@ namespace SSISAssemblyExecutor
         private DataGridViewComboBoxColumn grdColVars;
         private DataGridViewButtonColumn grdColExpression;
         private Label label5;
+        private Button btConfigFile;
+        private TextBox txConfigurationFile;
+        private Label label1;
 
     }
 }

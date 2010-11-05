@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -6,27 +7,27 @@ using System.Reflection;
 using System.Xml;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
-using SSISAssemblyExecutor;
 using DTSExecResult = Microsoft.SqlServer.Dts.Runtime.DTSExecResult;
 using VariableDispenser = Microsoft.SqlServer.Dts.Runtime.VariableDispenser;
 using DTSProductLevel = Microsoft.SqlServer.Dts.Runtime.DTSProductLevel;
 
-namespace SSISAssemblyExecuter100.SSIS
+namespace SSISExecuteAssemblyTask100.SSIS
 {
     [DtsTask(
         DisplayName = "Execute Assembly Task",
-        UITypeName = "SSISAssemblyExecutor.SSISExecAssemblyUIInterface" +
-        ",SSISAssemblyExecuter100," +
-        "Version=1.0.0.74," +
+        UITypeName = "SSISExecuteAssemblyTask100.SSISExecAssemblyUIInterface" +
+        ",SSISExecuteAssemblyTask100," +
+        "Version=1.0.0.203," +
         "Culture=Neutral," +
         "PublicKeyToken=bf357d0d3805f1fe",
-        IconResource = "SSISAssemblyExecutor.SSISAssemblyExecutor.ico",
-        RequiredProductLevel = DTSProductLevel.None
+        IconResource = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTask.ico",
+        RequiredProductLevel = DTSProductLevel.Enterprise,
+        TaskContact = "Cosmin VLASIU -> cosmin.vlasiu@gmail.com"
         )]
-    public class SSISExecAssembly : Task, IDTSComponentPersist
+    public class SSISExecuteAssemblyTask : Task, IDTSComponentPersist
     {
         #region Constructor
-        public SSISExecAssembly()
+        public SSISExecuteAssemblyTask()
         {
         }
 
@@ -47,15 +48,13 @@ namespace SSISAssemblyExecuter100.SSIS
         public string MappingParams { get; set; }
         [Category("General"), Description("Output variable")]
         public string OutPutVariable { get; set; }
+        [Category("General"), Description("ConfigurationFile")]
+        public string ConfigurationFile { get; set; }
         #endregion
 
         #region Private Properties
 
-        Variables vars = null;
-
-        #endregion
-
-        #region InitializeTask
+        Variables _vars;
 
         #endregion
 
@@ -67,45 +66,45 @@ namespace SSISAssemblyExecuter100.SSIS
         public override DTSExecResult Validate(Connections connections, VariableDispenser variableDispenser,
                                                IDTSComponentEvents componentEvents, IDTSLogging log)
         {
-            bool IsBaseValid = true;
+            bool isBaseValid = true;
 
             if (base.Validate(connections, variableDispenser, componentEvents, log) != DTSExecResult.Success)
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "Base validation failed", "", 0);
-                IsBaseValid = false;
+                componentEvents.FireError(0, "SSISExecuteAssemblyTask", "Base validation failed", "", 0);
+                isBaseValid = false;
             }
 
             if (!File.Exists(connections[AssemblyConnector].ConnectionString.Trim()))
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "Assembly doesn't exists at the specified path", "", 0);
-                IsBaseValid = false;
+                componentEvents.FireError(0, "SSISExecuteAssemblyTask", "Assembly doesn't exists at the specified path", "", 0);
+                isBaseValid = false;
             }
 
             if (string.IsNullOrEmpty(AssemblyConnector))
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "A connector is required.", "", 0);
-                IsBaseValid = false;
+                componentEvents.FireError(0, "SSISExecuteAssemblyTask", "A connector is required.", "", 0);
+                isBaseValid = false;
             }
 
             if (string.IsNullOrEmpty(AssemblyNamespace))
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "A namespace is required.", "", 0);
-                IsBaseValid = false;
+                componentEvents.FireError(0, "SSISExecuteAssemblyTask", "A namespace is required.", "", 0);
+                isBaseValid = false;
             }
 
             if (string.IsNullOrEmpty(AssemblyClass))
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "A class is required.", "", 0);
-                IsBaseValid = false;
+                componentEvents.FireError(0, "SSISExecuteAssemblyTask", "A class is required.", "", 0);
+                isBaseValid = false;
             }
 
             if (string.IsNullOrEmpty(AssemblyMethod))
             {
-                componentEvents.FireError(0, "SSISExecAssembly", "A method to execute is required.", "", 0);
-                IsBaseValid = false;
+                componentEvents.FireError(0, "SSISExecuteAssemblyTask", "A method to execute is required.", "", 0);
+                isBaseValid = false;
             }
 
-            return IsBaseValid ? DTSExecResult.Success : DTSExecResult.Failure;
+            return isBaseValid ? DTSExecResult.Success : DTSExecResult.Failure;
         }
 
         #endregion
@@ -129,82 +128,76 @@ namespace SSISAssemblyExecuter100.SSIS
 
             GetNeededVariables(variableDispenser);
 
-            componentEvents.FireInformation(0, "SSISAssembly", "Filename: " + connections[AssemblyConnector].ConnectionString, string.Empty, 0, ref refire);
+            componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Filename: " + connections[AssemblyConnector].ConnectionString, string.Empty, 0, ref refire);
             try
             {
-                //Get the path of the targeted file
+                //Get the path and folder of the targeted file
                 AssemblyPath = connections[AssemblyConnector].ConnectionString;
+                string privateBinPath = Path.GetDirectoryName(AssemblyPath);
 
                 //Inform us...
-                componentEvents.FireInformation(0, "SSISAssembly", "Starts executing method..." + AssemblyMethod, string.Empty, 0, ref refire);
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Starts executing method..." + AssemblyMethod, string.Empty, 0, ref refire);
 
-                //Load assembly from the given path
-                Assembly assembly = Assembly.LoadFrom(AssemblyPath);
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", string.Format("Create AppDomainSetup... within ConfigurationFile = {0}, PrivateBinPath = {1}, AssemblyMethod = {2}", ConfigurationFile, privateBinPath, AssemblyMethod), string.Empty, 0, ref refire);
 
-                if (assembly == null)
-                    throw new Exception("Assembly instance is NULL");
-
-                //Get the type -Namespace.Class-
-                var type = ReflectionTools.GetTypeFromName(assembly, string.Format("{0}.{1}", AssemblyNamespace, AssemblyClass));
-
-                if (type == null)
-                    throw new Exception("Assembly's type is NULL");
-
-                object retValue = null, instanceObject = null;
-
-                //Obtain your method information
-                MethodInfo methodInfo = type.GetMethod(AssemblyMethod);
-
-                //Prepare your parameters to be passed as parameters
-                object[] paramObject = GetValuedParams(vars, variableDispenser, methodInfo);
-
-                //Check method type; if it's static...
-                if (methodInfo.IsStatic)
+                var appDomainSetup = new AppDomainSetup
                 {
-                    //Invoke static member
-                    retValue = type.InvokeMember(AssemblyMethod,
-                                                     BindingFlags.InvokeMethod,
-                                                     null,
-                                                     BindingFlags.Static | BindingFlags.Public,
-                                                     paramObject);
+                    ConfigurationFile = ConfigurationFile,
+                    PrivateBinPath = privateBinPath,
+                    ShadowCopyFiles = "true"
+                };
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Create AppDomain... ", string.Empty, 0, ref refire);
+
+                AppDomain appDomain = AppDomain.CreateDomain("AppDomainSSISAssemblyTask", null, appDomainSetup);
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Create AssemblyHandler... ", string.Empty, 0, ref refire);
+
+                var assemblyLoader = (AssemblyHandler)appDomain.CreateInstanceAndUnwrap(typeof(AssemblyHandler).Assembly.FullName,
+                                                                                       typeof(AssemblyHandler).FullName);
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "assemblyLoader.LoadAssembly... ", string.Empty, 0, ref refire);
+
+                assemblyLoader.LoadAssembly(AssemblyPath);
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Get Parameters's values", string.Empty, 0, ref refire);
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "MappingParams = " + MappingParams, string.Empty, 0, ref refire);
+
+                var varObjects = GetValuedParamsWithoutMethodInfo(_vars, variableDispenser);
+
+                foreach (var varObject in varObjects)
+                {
+                    componentEvents.FireInformation(0, "SSIS Execute Assembly Task", string.Format("Params obtained {0}", varObject), string.Empty, 0, ref refire);
                 }
 
-                //Check object type: it is a instantiable object (class) //TODO check within a  structure?
-                if (type.IsClass && !type.IsAbstract && !type.IsSealed)
-                {
-                    instanceObject = ReflectionTools.CreateInstance(assembly, type);
-                    //invoke instanciated member
-                    retValue = methodInfo.Invoke(instanceObject, paramObject);
-                }
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Call ExecuteMethod method... ", string.Empty, 0, ref refire);
+
+                object retValue = assemblyLoader.ExecuteMethod(string.Format("{0}.{1}", AssemblyNamespace, AssemblyClass), AssemblyMethod, varObjects.ToArray());
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Get returned value if it exists or is not null... ", string.Empty, 0, ref refire);
 
                 //get returned value if it exists or is not null
-                if (vars[OutPutVariable] != null && retValue != null)
-                {
-                    vars[OutPutVariable].Value = retValue;
-                }
+                if (retValue != null && string.IsNullOrEmpty(OutPutVariable) && _vars[OutPutVariable] != null)
+                    _vars[OutPutVariable].Value = retValue;
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Get REF or OUT values obtained after the execution of the method ... ", string.Empty, 0, ref refire);
 
                 // Get REF or OUT values obtained after the execution of the method 
-                GetRefValueParams(methodInfo, paramObject);
+                GetRefValueParamsWithoutMethodInfo(varObjects.ToArray());
 
                 //...finally we log the successfull information
-                componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.",
-                                                string.Empty, 0,
-                                                ref refire);
+                componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.", string.Empty, 0, ref refire);
             }
             catch (Exception ex)
             {
-                componentEvents.FireError(0,
-                                          "SSISAssemblyTask",
-                                          string.Format("Problem: {0}", 
-                                                        ex.Message),
-                                          "",
-                                          0);
+                componentEvents.FireError(0, "SSISAssemblyTask", string.Format("Problem: {0} {1}", ex.Message, ex.StackTrace), "", 0);
             }
             finally
             {
-                if (vars.Locked)
+                if (_vars.Locked)
                 {
-                    vars.Unlock();
+                    _vars.Unlock();
                 }
             }
 
@@ -214,6 +207,25 @@ namespace SSISAssemblyExecuter100.SSIS
         #endregion
 
         #region Methods
+
+        private void GetRefValueParamsWithoutMethodInfo(object[] paramObject)
+        {
+            int paramIndex = 0;
+
+            string[] mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var mappedParam in mappedParams)
+            {
+                var paramDirection = mappedParam.Split('|')[2];
+
+                if (paramDirection == ParameterDirection.OUT)
+                {
+                    _vars[mappedParam.Split('|')[1].Trim()].Value = paramObject[paramIndex];
+                }
+
+                paramIndex++;
+            }
+        }
 
         /// <summary>
         /// Get REF or OUT values obtained after the execution of the method 
@@ -226,15 +238,15 @@ namespace SSISAssemblyExecuter100.SSIS
 
             foreach (ParameterInfo parameterInfo in methodInfo.GetParameters())
             {
-                var mappedParams = MappingParams.Split(';').ToArray();
+                var mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
-                foreach (string param in from param in mappedParams
-                                         where param.Length > 0
-                                         where param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name
-                                         where param.Split('|')[0].Split('=')[1].Trim().Contains("&")
-                                         select param)
+                foreach (var param in from param in mappedParams
+                                      where param.Length > 0
+                                      where param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name
+                                      where param.Split('|')[0].Split('=')[1].Trim().Contains("&")
+                                      select param)
                 {
-                    vars[param.Split('|')[1].Trim()].Value = paramObject[paramIndex];
+                    _vars[param.Split('|')[1].Trim()].Value = paramObject[paramIndex];
                     break;
                 }
 
@@ -250,7 +262,7 @@ namespace SSISAssemblyExecuter100.SSIS
         {
             try
             {
-                var mappedParams = MappingParams.Split(';');
+                var mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
                 for (int index = 0; index < mappedParams.Length - 1; index++)
                 {
@@ -272,12 +284,12 @@ namespace SSISAssemblyExecuter100.SSIS
                 if (!string.IsNullOrEmpty(OutPutVariable))
                     variableDispenser.LockForWrite(OutPutVariable);
             }
-            catch
+            catch (Exception)
             {
                 //We will continue...
             }
 
-            variableDispenser.GetVariables(ref vars);
+            variableDispenser.GetVariables(ref _vars);
         }
 
         /// <summary>
@@ -289,9 +301,9 @@ namespace SSISAssemblyExecuter100.SSIS
         /// <returns></returns>
         private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
         {
-            object variableObject = null;
+            object variableObject;
 
-            ExpressionEvaluatorClass expressionEvaluatorClass = new ExpressionEvaluatorClass
+            var expressionEvaluatorClass = new ExpressionEvaluatorClass
                                                                     {
                                                                         Expression = mappedParam
                                                                     };
@@ -312,7 +324,7 @@ namespace SSISAssemblyExecuter100.SSIS
         /// <returns></returns>
         private object[] GetValuedParams(Variables vars, VariableDispenser variableDispenser, MethodInfo methodInfo)
         {
-            object[] objects = null;
+            object[] objects;
 
             try
             {
@@ -321,11 +333,11 @@ namespace SSISAssemblyExecuter100.SSIS
                 objects = new object[parameterInfos.Length];
 
                 int paramIndex = 0;
+
                 foreach (ParameterInfo parameterInfo in parameterInfos)
                 {
-                    var mappedParams = MappingParams.Split(';').ToArray();
-                    foreach (string param in
-                        mappedParams.Where(param => param.Length > 0).Where(param => param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name))
+                    var mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    foreach (string param in mappedParams.Where(param => param.Length > 0).Where(param => param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name))
                     {
                         objects[paramIndex] = param.Split('|')[1].Contains("@")
                                                   ? EvaluateExpression(param.Split('|')[1], variableDispenser)
@@ -341,7 +353,39 @@ namespace SSISAssemblyExecuter100.SSIS
             }
             catch (Exception exception)
             {
-                throw new Exception(exception.Message);
+                throw new Exception(exception.StackTrace);
+            }
+
+            return objects;
+        }
+
+        /// <summary>
+        /// Prepares method's parameters that will be executed 
+        ///     It will recuperate the direct values
+        ///     It will make the interpretation of the expressions
+        ///     It will pass NULL value for REF Or OUT params
+        /// </summary>
+        /// <param name="vars"></param>
+        /// <param name="variableDispenser"></param>
+        /// <returns></returns>
+        private List<object> GetValuedParamsWithoutMethodInfo(Variables vars, VariableDispenser variableDispenser)
+        {
+            var objects = new List<object>();
+
+            try
+            {
+                //objects = new object[MappingParams.Split(new [] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList().Count];
+
+                string[] mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+
+                objects.AddRange(from mappedParam in mappedParams
+                                 let paramInfo = mappedParam.Split('|')[1]
+                                 let paramType = mappedParam.Split('|')[0].Split('=')[1]
+                                 select Convert.ChangeType(((paramInfo.Contains("@") ? EvaluateExpression(paramInfo.Trim(), variableDispenser) : vars[paramInfo.Trim()].Value)), Type.GetType(paramType)));
+            }
+            catch (Exception exception)
+            {
+                throw new Exception("Check StackTrace " + exception.Message + " :: " + exception.StackTrace);
             }
 
             return objects;
@@ -354,7 +398,7 @@ namespace SSISAssemblyExecuter100.SSIS
         //Get properties from package
         void IDTSComponentPersist.LoadFromXML(XmlElement node, IDTSInfoEvents infoEvents)
         {
-            if (node.Name != "SSISExecAssembly")
+            if (node.Name != "SSISExecuteAssemblyTask")
             {
                 throw new Exception("Unexpected task element when loading task.");
             }
@@ -368,17 +412,18 @@ namespace SSISAssemblyExecuter100.SSIS
                 AssemblyMethod = node.Attributes.GetNamedItem(NamedStringMembers.ASSEMBLY_METHOD).Value;
                 MappingParams = node.Attributes.GetNamedItem(NamedStringMembers.MAPPING_PARAMS).Value;
                 OutPutVariable = node.Attributes.GetNamedItem(NamedStringMembers.OUTPUT_VARIABLE).Value;
+                ConfigurationFile = node.Attributes.GetNamedItem(NamedStringMembers.CONFIGURATION_FILE).Value;
             }
-            catch
+            catch (Exception exception)
             {
-                //throw;
+                throw new Exception(exception.Message);
             }
         }
 
         //Save properties to package
         void IDTSComponentPersist.SaveToXML(XmlDocument doc, IDTSInfoEvents infoEvents)
         {
-            XmlElement taskElement = doc.CreateElement(string.Empty, "SSISExecAssembly", string.Empty);
+            XmlElement taskElement = doc.CreateElement(string.Empty, "SSISExecuteAssemblyTask", string.Empty);
 
             XmlAttribute assemblyConnector = doc.CreateAttribute(string.Empty, NamedStringMembers.ASSEMBLY_CONNECTOR, string.Empty);
             assemblyConnector.Value = AssemblyConnector;
@@ -401,6 +446,9 @@ namespace SSISAssemblyExecuter100.SSIS
             XmlAttribute outPutVariableAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.OUTPUT_VARIABLE, string.Empty);
             outPutVariableAttribute.Value = OutPutVariable;
 
+            XmlAttribute configurationFileAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.CONFIGURATION_FILE, string.Empty);
+            configurationFileAttribute.Value = ConfigurationFile;
+
             taskElement.Attributes.Append(assemblyPathAttribute);
             taskElement.Attributes.Append(assemblyConnector);
             taskElement.Attributes.Append(assemblyNamespaceAttribute);
@@ -408,6 +456,7 @@ namespace SSISAssemblyExecuter100.SSIS
             taskElement.Attributes.Append(assemblyMethodAttribute);
             taskElement.Attributes.Append(mappingParamsAttribute);
             taskElement.Attributes.Append(outPutVariableAttribute);
+            taskElement.Attributes.Append(configurationFileAttribute);
 
             doc.AppendChild(taskElement);
         }

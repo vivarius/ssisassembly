@@ -5,8 +5,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSSIS", "TestSSIS", "{76
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSISAssemblyExecutor", "AssemblyExecutor\SSISAssemblyExecutor.csproj", "{70D61E07-4388-40B0-A0D7-5836BC463AD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{640FDBBC-057E-4388-90BC-5A03D764AF0B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{373D05CF-6764-4B72-A579-DE484F102565}"
 	ProjectSection(SolutionItems) = preProject
 		ExecAssembly.vsmdi = ExecAssembly.vsmdi
@@ -18,52 +16,51 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLibrary", "TestLibrary\
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = AssemblyExecutor\\SSISAssemblyExecutor.csproj
 		SccProjectName1 = AssemblyExecutor
 		SccLocalPath1 = AssemblyExecutor
-		SccProjectUniqueName2 = UnitTest\\UnitTest.csproj
-		SccProjectName2 = UnitTest
-		SccLocalPath2 = UnitTest
-		SccProjectUniqueName3 = TestLibrary\\TestLibrary.csproj
-		SccProjectTopLevelParentUniqueName3 = ExecAssembly.sln
-		SccProjectName3 = TestLibrary
-		SccLocalPath3 = TestLibrary
+		SccProjectUniqueName2 = TestLibrary\\TestLibrary.csproj
+		SccProjectTopLevelParentUniqueName2 = ExecAssembly.sln
+		SccProjectName2 = TestLibrary
+		SccLocalPath2 = TestLibrary
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = ExecAssembly.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Development|Any CPU = Development|Any CPU
+		Development|x86 = Development|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|x86.ActiveCfg = Debug|x86
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Debug|x86.Build.0 = Debug|x86
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|x86.ActiveCfg = Debug|x86
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Development|x86.Build.0 = Debug|x86
 		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{640FDBBC-057E-4388-90BC-5A03D764AF0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|x86.ActiveCfg = Release|x86
+		{70D61E07-4388-40B0-A0D7-5836BC463AD0}.Release|x86.Build.0 = Release|x86
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Debug|x86.ActiveCfg = Debug|x86
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|x86.ActiveCfg = Debug|x86
+		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Development|x86.Build.0 = Debug|x86
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C} = {76A3F7F9-3926-47D6-8AD6-8CCE3E69E993}
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.ActiveCfg = Development
-		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.Build.0 = Development
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.ActiveCfg = Development
-		{EDCB29C5-ADC6-4894-AB81-64F3E702BE10}.Development|Default.Build.0 = Development
 	EndGlobalSection
 EndGlobal

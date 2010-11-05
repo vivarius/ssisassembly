@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SSISAssemblyExecutor
+namespace SSISExecuteAssemblyTask100.SSIS
 {
     public class ComboBoxObjectComboItem
     {

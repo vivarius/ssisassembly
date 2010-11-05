@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace SSISAssemblyExecutor
+namespace SSISExecuteAssemblyTask100.SSIS
 {
     public static class ReflectionTools
     {
@@ -24,30 +24,31 @@ namespace SSISAssemblyExecutor
             return assembly.CreateInstance(type.ToString());
         }
 
-        private static Type GetTypeFromName(string TypeName)
+        private static Type GetTypeFromName(string typeName)
         {
-            Type type = Type.GetType(TypeName);
+            Type type = Type.GetType(typeName);
             if (type != null)
                 return type;
 
             foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies())
             {
-                type = ass.GetType(TypeName, false);
+                type = ass.GetType(typeName, false);
                 if (type != null)
                     break;
             }
+
             return type;
         }
 
-        internal static Type GetTypeFromName(Assembly assembly, string TypeName)
+        internal static Type GetTypeFromName(Assembly assembly, string typeName)
         {
-            Type type = Type.GetType(TypeName);
-            return type ?? assembly.GetType(TypeName, false);
+            Type type = Type.GetType(typeName);
+            return type ?? assembly.GetType(typeName);
         }
 
         internal static object CreateInstanceFromTypeName(string typeName, params object[] args)
         {
-            object instance = null;
+            object instance;
 
             try
             {
