@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSSIS", "TestSSIS", "{76A3F7F9-3926-47D6-8AD6-8CCE3E69E993}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSISAssemblyExecutor", "AssemblyExecutor\SSISAssemblyExecutor.csproj", "{70D61E07-4388-40B0-A0D7-5836BC463AD0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSISExecuteAssemblyTask", "AssemblyExecutor\SSISExecuteAssemblyTask.csproj", "{70D61E07-4388-40B0-A0D7-5836BC463AD0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLibrary", "TestLibrary\TestLibrary.csproj", "{0FFD0DEA-4E86-4310-B913-372C5E8C4B9C}"
 EndProject
@@ -13,13 +13,13 @@ Global
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
-		SccProjectUniqueName1 = AssemblyExecutor\\SSISAssemblyExecutor.csproj
-		SccProjectName1 = AssemblyExecutor
-		SccLocalPath1 = AssemblyExecutor
-		SccProjectUniqueName2 = TestLibrary\\TestLibrary.csproj
-		SccProjectTopLevelParentUniqueName2 = ExecAssembly.sln
-		SccProjectName2 = TestLibrary
-		SccLocalPath2 = TestLibrary
+		SccProjectUniqueName1 = TestLibrary\\TestLibrary.csproj
+		SccProjectTopLevelParentUniqueName1 = ExecAssembly.sln
+		SccProjectName1 = TestLibrary
+		SccLocalPath1 = TestLibrary
+		SccProjectUniqueName2 = AssemblyExecutor\\SSISExecuteAssemblyTask.csproj
+		SccProjectName2 = AssemblyExecutor
+		SccLocalPath2 = AssemblyExecutor
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = ExecAssembly.vsmdi
