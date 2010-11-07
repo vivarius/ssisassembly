@@ -134,9 +134,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="ReflectionTools.cs" />
-    <Compile Include="SSISExecAssembly.cs" />
+    <Compile Include="SSISExecuteAssemblyTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SSISExecAssemblyUIInterface.cs" />
+    <Compile Include="SSISExecuteAssemblyTaskUIInterface.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Settings.settings">
