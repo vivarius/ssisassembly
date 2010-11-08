@@ -2,7 +2,6 @@
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Design;
-using SSISExecuteAssemblyTask100.SSIS;
 
 namespace SSISExecuteAssemblyTask100
 {

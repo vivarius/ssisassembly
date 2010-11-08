@@ -1,4 +1,4 @@
-﻿namespace SSISExecuteAssemblyTask100.SSIS
+﻿namespace SSISExecuteAssemblyTask100
 {
     internal static class NamedStringMembers
     {

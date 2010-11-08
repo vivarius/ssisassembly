@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using System.Xml;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
@@ -11,16 +12,16 @@ using DTSExecResult = Microsoft.SqlServer.Dts.Runtime.DTSExecResult;
 using VariableDispenser = Microsoft.SqlServer.Dts.Runtime.VariableDispenser;
 using DTSProductLevel = Microsoft.SqlServer.Dts.Runtime.DTSProductLevel;
 
-namespace SSISExecuteAssemblyTask100.SSIS
+namespace SSISExecuteAssemblyTask100
 {
     [DtsTask(
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.0.206," +
+        "Version=1.0.0.225," +
         "Culture=Neutral," +
         "PublicKeyToken=99d80f2884c4916d",
-        IconResource = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTask.ico",
+        IconResource = "ExecuteAssemblyTask.ico",
         RequiredProductLevel = DTSProductLevel.Enterprise,
         TaskContact = "Cosmin VLASIU -> cosmin.vlasiu@gmail.com"
         )]
@@ -264,9 +265,10 @@ namespace SSISExecuteAssemblyTask100.SSIS
             {
                 var mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
-                for (int index = 0; index < mappedParams.Length - 1; index++)
+                foreach (string mappedParam in mappedParams)
                 {
-                    var param = mappedParams[index].Split('|')[1];
+                    var param = mappedParam.Split('|')[1];
+
                     if (param.Contains("@"))
                     {
                         var regexStr = param.Split('@');
@@ -374,14 +376,41 @@ namespace SSISExecuteAssemblyTask100.SSIS
 
             try
             {
-                //objects = new object[MappingParams.Split(new [] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList().Count];
-
                 string[] mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
                 objects.AddRange(from mappedParam in mappedParams
-                                 let paramInfo = mappedParam.Split('|')[1]
-                                 let paramType = mappedParam.Split('|')[0].Split('=')[1]
-                                 select Convert.ChangeType(((paramInfo.Contains("@") ? EvaluateExpression(paramInfo.Trim(), variableDispenser) : vars[paramInfo.Trim()].Value)), Type.GetType(paramType)));
+                                 let paramInfo = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[1]
+                                 let paramType = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[0].Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries)[1]
+                                 let paramDirection = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[2]
+                                 select Convert.ChangeType(((paramInfo.Contains("@"))
+                                                            ? EvaluateExpression(paramInfo.Trim(), variableDispenser)
+                                                            : (paramDirection == ParameterDirection.IN)
+                                                                    ? vars[paramInfo.Trim()].Value
+                                                                    : vars["@" + paramInfo.Trim()].Value)
+                                                           , Type.GetType(paramType)));
+
+                //int Index = 0;
+                //foreach (var mappedParam in mappedParams)
+                //{
+                //    var paramInfo = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                //    var paramType = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[0].Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                //    var paramDirection = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[2];
+
+                //    Index++;
+
+                //    if (paramInfo.Contains("@"))
+                //    {
+                //        objects.Add(Convert.ChangeType(EvaluateExpression(paramInfo.Trim(), variableDispenser), Type.GetType(paramType)));
+                //    }
+                //    else if (paramDirection == ParameterDirection.IN)
+                //    {
+                //        objects.Add((Convert.ChangeType(vars[paramInfo.Trim()].Value, Type.GetType(paramType))));
+                //    }
+                //    else
+                //    {
+                //        objects.Add((Convert.ChangeType(vars["@" + paramInfo.Trim()].Value, Type.GetType(paramType))));
+                //    }
+                //}
             }
             catch (Exception exception)
             {

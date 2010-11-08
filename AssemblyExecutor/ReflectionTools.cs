@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace SSISExecuteAssemblyTask100.SSIS
+namespace SSISExecuteAssemblyTask100
 {
     public static class ReflectionTools
     {

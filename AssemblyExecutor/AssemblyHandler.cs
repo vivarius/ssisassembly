@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace SSISExecuteAssemblyTask100.SSIS
+namespace SSISExecuteAssemblyTask100
 {
     [Serializable]
     class AssemblyHandler : MarshalByRefObject
@@ -50,7 +50,8 @@ namespace SSISExecuteAssemblyTask100.SSIS
                 int index = 0;
                 foreach (var parameter in parameters)
                 {
-                    paramTypes[index++] = parameter.GetType();
+                    paramTypes[index] = parameter.GetType();
+                    index++;
                 }
 
                 _methodInfo = type.GetMethod(methodName, paramTypes);
@@ -61,7 +62,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
                 }
                 else
                 {
-                    object instanceObject = _assembly.CreateInstance(type.ToString());
+                    var instanceObject = _assembly.CreateInstance(type.ToString());
                     retObject = _methodInfo.Invoke(instanceObject, parameters);
                 }
             }

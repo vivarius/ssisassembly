@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace SSISExecuteAssemblyTask100.SSIS
+namespace SSISExecuteAssemblyTask100
 {
     partial class frmAssembly
     {
@@ -60,7 +60,6 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.grdColExpression = new System.Windows.Forms.DataGridViewButtonColumn();
             this.lbOutputValue = new System.Windows.Forms.Label();
             this.cmbBoxReturnVariable = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -71,7 +70,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(366, 424);
+            this.btnCancel.Location = new System.Drawing.Point(482, 425);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 21;
@@ -81,7 +80,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             // btnOK
             // 
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(285, 424);
+            this.btnOK.Location = new System.Drawing.Point(401, 425);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 22;
@@ -96,7 +95,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.tabControl1.Location = new System.Drawing.Point(11, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(430, 203);
+            this.tabControl1.Size = new System.Drawing.Size(550, 203);
             this.tabControl1.TabIndex = 23;
             // 
             // tabPage1
@@ -115,14 +114,14 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(422, 177);
+            this.tabPage1.Size = new System.Drawing.Size(542, 177);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Assembly specifics";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // btConfigFile
             // 
-            this.btConfigFile.Location = new System.Drawing.Point(392, 126);
+            this.btConfigFile.Location = new System.Drawing.Point(512, 127);
             this.btConfigFile.Name = "btConfigFile";
             this.btConfigFile.Size = new System.Drawing.Size(24, 23);
             this.btConfigFile.TabIndex = 37;
@@ -134,7 +133,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             // 
             this.txConfigurationFile.Location = new System.Drawing.Point(76, 127);
             this.txConfigurationFile.Name = "txConfigurationFile";
-            this.txConfigurationFile.Size = new System.Drawing.Size(310, 20);
+            this.txConfigurationFile.Size = new System.Drawing.Size(430, 20);
             this.txConfigurationFile.TabIndex = 36;
             // 
             // label1
@@ -153,7 +152,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.cmbConnection.FormattingEnabled = true;
             this.cmbConnection.Location = new System.Drawing.Point(76, 15);
             this.cmbConnection.Name = "cmbConnection";
-            this.cmbConnection.Size = new System.Drawing.Size(340, 21);
+            this.cmbConnection.Size = new System.Drawing.Size(460, 21);
             this.cmbConnection.TabIndex = 34;
             this.cmbConnection.SelectedIndexChanged += new System.EventHandler(this.cmbConnection_SelectedIndexChanged);
             // 
@@ -172,7 +171,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.cmbMethod.FormattingEnabled = true;
             this.cmbMethod.Location = new System.Drawing.Point(76, 100);
             this.cmbMethod.Name = "cmbMethod";
-            this.cmbMethod.Size = new System.Drawing.Size(340, 21);
+            this.cmbMethod.Size = new System.Drawing.Size(460, 21);
             this.cmbMethod.TabIndex = 26;
             this.cmbMethod.SelectedIndexChanged += new System.EventHandler(this.cmbMethod_SelectedIndexChanged);
             // 
@@ -182,7 +181,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.cmbClasses.FormattingEnabled = true;
             this.cmbClasses.Location = new System.Drawing.Point(76, 74);
             this.cmbClasses.Name = "cmbClasses";
-            this.cmbClasses.Size = new System.Drawing.Size(340, 21);
+            this.cmbClasses.Size = new System.Drawing.Size(460, 21);
             this.cmbClasses.TabIndex = 25;
             this.cmbClasses.SelectedIndexChanged += new System.EventHandler(this.cmbClasses_SelectedIndexChanged);
             // 
@@ -192,7 +191,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.cmbNamespace.FormattingEnabled = true;
             this.cmbNamespace.Location = new System.Drawing.Point(76, 46);
             this.cmbNamespace.Name = "cmbNamespace";
-            this.cmbNamespace.Size = new System.Drawing.Size(340, 21);
+            this.cmbNamespace.Size = new System.Drawing.Size(460, 21);
             this.cmbNamespace.TabIndex = 24;
             this.cmbNamespace.SelectedIndexChanged += new System.EventHandler(this.cmbNamespace_SelectedIndexChanged);
             // 
@@ -301,7 +300,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.grdParameters.Location = new System.Drawing.Point(11, 221);
             this.grdParameters.Name = "grdParameters";
             this.grdParameters.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.grdParameters.Size = new System.Drawing.Size(430, 160);
+            this.grdParameters.Size = new System.Drawing.Size(550, 160);
             this.grdParameters.TabIndex = 24;
             this.grdParameters.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.grdParameters_CellContentClick);
             // 
@@ -361,26 +360,16 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.cmbBoxReturnVariable.FormattingEnabled = true;
             this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 398);
             this.cmbBoxReturnVariable.Name = "cmbBoxReturnVariable";
-            this.cmbBoxReturnVariable.Size = new System.Drawing.Size(350, 21);
+            this.cmbBoxReturnVariable.Size = new System.Drawing.Size(470, 21);
             this.cmbBoxReturnVariable.TabIndex = 26;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(404, 9);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(46, 13);
-            this.label5.TabIndex = 36;
-            this.label5.Text = "1.0.0.206";
-            this.label5.Visible = false;
             // 
             // frmAssembly
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(453, 458);
-            this.Controls.Add(this.label5);
+            this.ClientSize = new System.Drawing.Size(571, 455);
             this.Controls.Add(this.cmbBoxReturnVariable);
             this.Controls.Add(this.lbOutputValue);
             this.Controls.Add(this.grdParameters);
@@ -394,7 +383,7 @@ namespace SSISExecuteAssemblyTask100.SSIS
             this.Name = "frmAssembly";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Assembly";
+            this.Text = "Task Configuration";
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
@@ -434,7 +423,6 @@ namespace SSISExecuteAssemblyTask100.SSIS
         private DataGridViewTextBoxColumn grdColDirection;
         private DataGridViewComboBoxColumn grdColVars;
         private DataGridViewButtonColumn grdColExpression;
-        private Label label5;
         private Button btConfigFile;
         private TextBox txConfigurationFile;
         private Label label1;

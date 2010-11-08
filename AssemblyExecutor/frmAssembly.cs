@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Controls;
 
-namespace SSISExecuteAssemblyTask100.SSIS
+namespace SSISExecuteAssemblyTask100
 {
     public partial class frmAssembly : Form
     {
