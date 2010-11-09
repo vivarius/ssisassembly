@@ -10,6 +10,14 @@
         public const string MAPPING_PARAMS = "MappingParams";
         public const string OUTPUT_VARIABLE = "OutPutVariable";
         public const string CONFIGURATION_FILE = "ConfigurationFile";
+        public const string CONFIGURATION_TYPE = "ConfigurationType";
+    }
+
+    internal static class ConfigurationType
+    {
+        public const string NO_CONFIGURATION = "No Configuration File";
+        public const string FILE_CONNECTOR = "File Connector";
+        public const string TASK_VARIABLE = "Variable";
     }
 
     internal static class ParameterDirection

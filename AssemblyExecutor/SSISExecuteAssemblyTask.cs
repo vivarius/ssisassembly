@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Forms;
 using System.Xml;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
@@ -18,7 +17,7 @@ namespace SSISExecuteAssemblyTask100
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.0.225," +
+        "Version=1.0.0.250," +
         "Culture=Neutral," +
         "PublicKeyToken=99d80f2884c4916d",
         IconResource = "ExecuteAssemblyTask.ico",
@@ -51,6 +50,9 @@ namespace SSISExecuteAssemblyTask100
         public string OutPutVariable { get; set; }
         [Category("General"), Description("ConfigurationFile")]
         public string ConfigurationFile { get; set; }
+        [Category("General"), Description("Configuration Type")]
+        public string ConfigurationType { get; set; }
+
         #endregion
 
         #region Private Properties
@@ -105,6 +107,15 @@ namespace SSISExecuteAssemblyTask100
                 isBaseValid = false;
             }
 
+            if (ConfigurationType != SSISExecuteAssemblyTask100.ConfigurationType.NO_CONFIGURATION)
+            {
+                if (string.IsNullOrEmpty(ConfigurationType))
+                {
+                    componentEvents.FireError(0, "SSISExecuteAssemblyTask", "A method to execute is required.", "", 0);
+                    isBaseValid = false;
+                }
+            }
+
             return isBaseValid ? DTSExecResult.Success : DTSExecResult.Failure;
         }
 
@@ -121,10 +132,8 @@ namespace SSISExecuteAssemblyTask100
         /// <param name="log">Log Messages</param>
         /// <param name="transaction"></param>
         /// <returns></returns>
-        public override DTSExecResult Execute(Connections connections, VariableDispenser variableDispenser,
-                                              IDTSComponentEvents componentEvents, IDTSLogging log, object transaction)
+        public override DTSExecResult Execute(Connections connections, VariableDispenser variableDispenser, IDTSComponentEvents componentEvents, IDTSLogging log, object transaction)
         {
-
             bool refire = false;
 
             GetNeededVariables(variableDispenser);
@@ -134,19 +143,21 @@ namespace SSISExecuteAssemblyTask100
             {
                 //Get the path and folder of the targeted file
                 AssemblyPath = connections[AssemblyConnector].ConnectionString;
+
                 string privateBinPath = Path.GetDirectoryName(AssemblyPath);
 
                 //Inform us...
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Starts executing method..." + AssemblyMethod, string.Empty, 0, ref refire);
 
-                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", string.Format("Create AppDomainSetup... within ConfigurationFile = {0}, PrivateBinPath = {1}, AssemblyMethod = {2}", ConfigurationFile, privateBinPath, AssemblyMethod), string.Empty, 0, ref refire);
-
                 var appDomainSetup = new AppDomainSetup
                 {
-                    ConfigurationFile = ConfigurationFile,
                     PrivateBinPath = privateBinPath,
                     ShadowCopyFiles = "true"
                 };
+
+                GetConfigurationFile(variableDispenser, connections, appDomainSetup);
+
+                componentEvents.FireInformation(0, "SSIS Execute Assembly Task", string.Format("AppDomainSetup created... within ConfigurationFile = {0}, PrivateBinPath = {1}, AssemblyMethod = {2}", appDomainSetup.ConfigurationFile, privateBinPath, AssemblyMethod), string.Empty, 0, ref refire);
 
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Create AppDomain... ", string.Empty, 0, ref refire);
 
@@ -155,7 +166,7 @@ namespace SSISExecuteAssemblyTask100
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Create AssemblyHandler... ", string.Empty, 0, ref refire);
 
                 var assemblyLoader = (AssemblyHandler)appDomain.CreateInstanceAndUnwrap(typeof(AssemblyHandler).Assembly.FullName,
-                                                                                       typeof(AssemblyHandler).FullName);
+                                                                                        typeof(AssemblyHandler).FullName);
 
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "assemblyLoader.LoadAssembly... ", string.Empty, 0, ref refire);
 
@@ -203,6 +214,24 @@ namespace SSISExecuteAssemblyTask100
             }
 
             return base.Execute(connections, variableDispenser, componentEvents, log, transaction);
+        }
+
+        private void GetConfigurationFile(VariableDispenser variableDispenser, Connections connections, AppDomainSetup appDomainSetup)
+        {
+            if (ConfigurationType != SSISExecuteAssemblyTask100.ConfigurationType.NO_CONFIGURATION)
+            {
+                string configurationFile = string.Empty;
+
+                if (ConfigurationType == SSISExecuteAssemblyTask100.ConfigurationType.FILE_CONNECTOR)
+                    configurationFile = connections[ConfigurationFile].ConnectionString;
+
+                if (ConfigurationType == SSISExecuteAssemblyTask100.ConfigurationType.TASK_VARIABLE)
+                    configurationFile = (ConfigurationFile.Contains('@'))
+                                            ? EvaluateExpression(ConfigurationFile, variableDispenser).ToString()
+                                            : _vars[ConfigurationFile].Value.ToString();
+
+                appDomainSetup.ConfigurationFile = configurationFile;
+            }
         }
 
         #endregion
@@ -263,6 +292,7 @@ namespace SSISExecuteAssemblyTask100
         {
             try
             {
+                //Get variables for Method parameter
                 var mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (string mappedParam in mappedParams)
@@ -273,8 +303,25 @@ namespace SSISExecuteAssemblyTask100
                     {
                         var regexStr = param.Split('@');
 
-                        foreach (var nexSplitedVal in
-                            regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
+                        foreach (var nexSplitedVal in regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
+                        {
+                            variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                        }
+                    }
+                    else
+                        variableDispenser.LockForRead(param);
+                }
+
+                //Get variables for Configuration File
+                if (ConfigurationType == SSISExecuteAssemblyTask100.ConfigurationType.TASK_VARIABLE)
+                {
+                    var param = ConfigurationFile;
+
+                    if (param.Contains("@"))
+                    {
+                        var regexStr = param.Split('@');
+
+                        foreach (var nexSplitedVal in regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
                         {
                             variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
                         }
@@ -388,29 +435,6 @@ namespace SSISExecuteAssemblyTask100
                                                                     ? vars[paramInfo.Trim()].Value
                                                                     : vars["@" + paramInfo.Trim()].Value)
                                                            , Type.GetType(paramType)));
-
-                //int Index = 0;
-                //foreach (var mappedParam in mappedParams)
-                //{
-                //    var paramInfo = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[1];
-                //    var paramType = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[0].Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries)[1];
-                //    var paramDirection = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[2];
-
-                //    Index++;
-
-                //    if (paramInfo.Contains("@"))
-                //    {
-                //        objects.Add(Convert.ChangeType(EvaluateExpression(paramInfo.Trim(), variableDispenser), Type.GetType(paramType)));
-                //    }
-                //    else if (paramDirection == ParameterDirection.IN)
-                //    {
-                //        objects.Add((Convert.ChangeType(vars[paramInfo.Trim()].Value, Type.GetType(paramType))));
-                //    }
-                //    else
-                //    {
-                //        objects.Add((Convert.ChangeType(vars["@" + paramInfo.Trim()].Value, Type.GetType(paramType))));
-                //    }
-                //}
             }
             catch (Exception exception)
             {
@@ -442,6 +466,7 @@ namespace SSISExecuteAssemblyTask100
                 MappingParams = node.Attributes.GetNamedItem(NamedStringMembers.MAPPING_PARAMS).Value;
                 OutPutVariable = node.Attributes.GetNamedItem(NamedStringMembers.OUTPUT_VARIABLE).Value;
                 ConfigurationFile = node.Attributes.GetNamedItem(NamedStringMembers.CONFIGURATION_FILE).Value;
+                ConfigurationType = node.Attributes.GetNamedItem(NamedStringMembers.CONFIGURATION_TYPE).Value;
             }
             catch (Exception exception)
             {
@@ -478,6 +503,9 @@ namespace SSISExecuteAssemblyTask100
             XmlAttribute configurationFileAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.CONFIGURATION_FILE, string.Empty);
             configurationFileAttribute.Value = ConfigurationFile;
 
+            XmlAttribute configurationTypeAttribute = doc.CreateAttribute(string.Empty, NamedStringMembers.CONFIGURATION_TYPE, string.Empty);
+            configurationTypeAttribute.Value = ConfigurationType;
+
             taskElement.Attributes.Append(assemblyPathAttribute);
             taskElement.Attributes.Append(assemblyConnector);
             taskElement.Attributes.Append(assemblyNamespaceAttribute);
@@ -486,6 +514,7 @@ namespace SSISExecuteAssemblyTask100
             taskElement.Attributes.Append(mappingParamsAttribute);
             taskElement.Attributes.Append(outPutVariableAttribute);
             taskElement.Attributes.Append(configurationFileAttribute);
+            taskElement.Attributes.Append(configurationTypeAttribute);
 
             doc.AppendChild(taskElement);
         }

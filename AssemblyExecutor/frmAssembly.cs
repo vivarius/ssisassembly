@@ -56,6 +56,36 @@ namespace SSISExecuteAssemblyTask100
 
             LoadFileConnections();
 
+            try
+            {
+                if (_taskHost.Properties[NamedStringMembers.CONFIGURATION_TYPE].GetValue(_taskHost).ToString() != ConfigurationType.NO_CONFIGURATION)
+                {
+                    if (_taskHost.Properties[NamedStringMembers.CONFIGURATION_TYPE].GetValue(_taskHost).ToString() == ConfigurationType.FILE_CONNECTOR)
+                    {
+                        LoadConfigFileConnections();
+                        optChooseConfigFileConnector.Checked = true;
+                    }
+                    else
+                    {
+                        cmbConfigurationFile.Items.AddRange(LoadVariables("System.String").ToArray());
+                        optChooseVariable.Checked = true;
+                    }
+
+                    cmbConfigurationFile.Text = _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].GetValue(_taskHost).ToString();
+
+                    chkConfigFile.Checked = true;
+                }
+                else
+                    chkConfigFile.Checked = false;
+            }
+            catch
+            {
+                chkConfigFile.Checked = false;
+            }
+            finally
+            {
+                EnableConfigurationControlFile();
+            }
 
             if (_taskHost.Properties[NamedStringMembers.ASSEMBLY_CONNECTOR].GetValue(_taskHost) == null)
                 return;
@@ -89,7 +119,7 @@ namespace SSISExecuteAssemblyTask100
 
                 SelectTheRightMethod();
 
-                txConfigurationFile.Text = _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].GetValue(_taskHost).ToString();
+                //cmbConfigurationFile.Text = _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].GetValue(_taskHost).ToString();
             }
             catch (Exception exception)
             {
@@ -145,23 +175,21 @@ namespace SSISExecuteAssemblyTask100
                             }
                         }
                     }
+
                     break;
             }
         }
 
         private void btConfigFile_Click(object sender, EventArgs e)
         {
-            using (var openFileDialog = new OpenFileDialog
-            {
-                Filter = @"*.config|*.config",
-                InitialDirectory = Path.GetDirectoryName(_connections[cmbConnection.Text].ConnectionString)
-            })
-            {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (optChooseVariable.Checked)
+                using (var expressionBuilder = ExpressionBuilder.Instantiate(_taskHost.Variables, _taskHost.VariableDispenser, Type.GetType("String"), cmbConfigurationFile.Text))
                 {
-                    txConfigurationFile.Text = openFileDialog.FileName;
+                    if (expressionBuilder.ShowDialog() == DialogResult.OK)
+                    {
+                        cmbConfigurationFile.Text = expressionBuilder.Expression;
+                    }
                 }
-            }
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -172,7 +200,14 @@ namespace SSISExecuteAssemblyTask100
             _taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].SetValue(_taskHost, Convert.ToString(cmbNamespace.Text, System.Globalization.CultureInfo.InvariantCulture));
             _taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].SetValue(_taskHost, Convert.ToString(cmbClasses.Text, System.Globalization.CultureInfo.InvariantCulture));
             _taskHost.Properties[NamedStringMembers.ASSEMBLY_METHOD].SetValue(_taskHost, Convert.ToString(cmbMethod.Text, System.Globalization.CultureInfo.InvariantCulture));
-            _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].SetValue(_taskHost, Convert.ToString(txConfigurationFile.Text, System.Globalization.CultureInfo.InvariantCulture));
+            _taskHost.Properties[NamedStringMembers.CONFIGURATION_FILE].SetValue(_taskHost, chkConfigFile.Checked
+                                                                                                    ? Convert.ToString(cmbConfigurationFile.Text, System.Globalization.CultureInfo.InvariantCulture)
+                                                                                                    : string.Empty);
+            _taskHost.Properties[NamedStringMembers.CONFIGURATION_TYPE].SetValue(_taskHost, chkConfigFile.Checked
+                                                                                                    ? optChooseVariable.Checked
+                                                                                                        ? ConfigurationType.TASK_VARIABLE
+                                                                                                        : ConfigurationType.FILE_CONNECTOR
+                                                                                                     : ConfigurationType.NO_CONFIGURATION);
 
             var stringBuilder = new StringBuilder();
 
@@ -185,9 +220,24 @@ namespace SSISExecuteAssemblyTask100
             _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].SetValue(_taskHost, cmbBoxReturnVariable.Text);
         }
 
+        private void optChooseConfigFileConnector_Click(object sender, EventArgs e)
+        {
+            LoadConfigFileConnections();
+        }
+
+        private void optChooseVariable_Click(object sender, EventArgs e)
+        {
+            LoadVariablesForConfigFile();
+        }
+
+        private void chkConfigFile_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableConfigurationControlFile();
+        }
         #endregion
 
         #region Methods
+        #region Assembly's specifics
 
         private void SelectTheRightMethod()
         {
@@ -334,11 +384,46 @@ namespace SSISExecuteAssemblyTask100
             }
 
             string selectedText = string.Empty;
-            cmbBoxReturnVariable.DataSource = LoadOutPutVariables(methodInfo.ReturnParameter, ref selectedText).Items;
+            cmbBoxReturnVariable.DataSource = LoadVariables(methodInfo.ReturnParameter, ref selectedText).Items;
             cmbBoxReturnVariable.Text = selectedText;
 
             Cursor = Cursors.Arrow;
         }
+
+        #endregion
+
+        private void EnableConfigurationControlFile()
+        {
+            if (chkConfigFile.Checked)
+            {
+                EnbaleConfigurationFileControls(true);
+                if (optChooseConfigFileConnector.Checked)
+                    LoadConfigFileConnections();
+                else
+                    LoadVariablesForConfigFile();
+
+            }
+            else
+            {
+                EnbaleConfigurationFileControls(false);
+            }
+        }
+
+        private void LoadVariablesForConfigFile()
+        {
+            cmbConfigurationFile.Items.Clear();
+            cmbConfigurationFile.Items.AddRange(LoadVariables("System.String").ToArray());
+        }
+
+        private void EnbaleConfigurationFileControls(bool bEnable)
+        {
+            optChooseVariable.Enabled = bEnable;
+            optChooseConfigFileConnector.Enabled = bEnable;
+            btConfigFileExpression.Enabled = bEnable;
+            cmbConfigurationFile.Enabled = bEnable;
+        }
+
+        #region Variable Handlers
 
         private DataGridViewComboBoxCell LoadVariables(ParameterInfo parameterInfo)
         {
@@ -346,8 +431,8 @@ namespace SSISExecuteAssemblyTask100
 
             foreach (Variable variable in Variables)
             {
-                if (parameterInfo.ParameterType.IsByRef && variable.DataType == TypeCode.Object
-                 || Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType)
+                if (parameterInfo.ParameterType.IsByRef && variable.DataType == TypeCode.Object ||
+                    Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType)
                 {
                     comboBoxCell.Items.Add(variable.Name);
                 }
@@ -364,12 +449,16 @@ namespace SSISExecuteAssemblyTask100
             return comboBoxCell;
         }
 
-        private ComboBox LoadOutPutVariables(ParameterInfo parameterInfo, ref string selectedText)
+        private ComboBox LoadVariables(ParameterInfo parameterInfo, ref string selectedText)
+        {
+            return LoadVariables(parameterInfo.ParameterType.FullName, ref selectedText);
+        }
+
+        private ComboBox LoadVariables(string parameterInfo, ref string selectedText)
         {
             var comboBox = new ComboBox();
 
-            foreach (Variable variable in
-                Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType))
+            foreach (Variable variable in Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType))
             {
                 comboBox.Items.Add(variable.Name);
             }
@@ -383,14 +472,35 @@ namespace SSISExecuteAssemblyTask100
             return comboBox;
         }
 
-        //Load defined connection
+        private List<string> LoadVariables(string parameterInfo)
+        {
+            return Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType).Select(variable => variable.Name).ToList();
+        }
+
+        #endregion
+
+        #region Load File Connections
+
         private void LoadFileConnections()
         {
+            cmbConnection.Items.Clear();
+
             foreach (var connection in Connections)
             {
                 cmbConnection.Items.Add(connection.Name);
             }
         }
+
+        private void LoadConfigFileConnections()
+        {
+            cmbConfigurationFile.Items.Clear();
+            foreach (var connection in Connections)
+            {
+                cmbConfigurationFile.Items.Add(connection.Name);
+            }
+        }
+
+        #endregion
 
         #endregion
     }
