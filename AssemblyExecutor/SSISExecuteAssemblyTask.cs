@@ -17,7 +17,7 @@ namespace SSISExecuteAssemblyTask100
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.0.250," +
+        "Version=1.0.0.304," +
         "Culture=Neutral," +
         "PublicKeyToken=99d80f2884c4916d",
         IconResource = "ExecuteAssemblyTask.ico",
@@ -34,23 +34,23 @@ namespace SSISExecuteAssemblyTask100
         #endregion
 
         #region Public Properties
-        [Category("General"), Description("The connector associated with the task")]
+        [Category("Component specific"), Description("The connector associated with the task")]
         public string AssemblyConnector { get; set; }
-        [Category("General"), Description("The path to the assembly file")]
+        [Category("Component specific"), Description("The path to the assembly file")]
         public string AssemblyPath { get; set; }
-        [Category("General"), Description("Source namespace")]
+        [Category("Component specific"), Description("Source namespace")]
         public string AssemblyNamespace { get; set; }
-        [Category("General"), Description("Source class")]
+        [Category("Component specific"), Description("Source class")]
         public string AssemblyClass { get; set; }
-        [Category("General"), Description("Method to execute")]
+        [Category("Component specific"), Description("Method to execute")]
         public string AssemblyMethod { get; set; }
-        [Category("General"), Description("Mapping of the parameters of the method to execute")]
+        [Category("Component specific"), Description("Mapping of the parameters of the method to execute")]
         public string MappingParams { get; set; }
-        [Category("General"), Description("Output variable")]
+        [Category("Component specific"), Description("Output variable")]
         public string OutPutVariable { get; set; }
-        [Category("General"), Description("ConfigurationFile")]
+        [Category("Component specific"), Description("The path to the configuration file")]
         public string ConfigurationFile { get; set; }
-        [Category("General"), Description("Configuration Type")]
+        [Category("Component specific"), Description("Configuration type")]
         public string ConfigurationType { get; set; }
 
         #endregion
@@ -66,8 +66,7 @@ namespace SSISExecuteAssemblyTask100
         /// <summary>
         /// Validate local parameters
         /// </summary>
-        public override DTSExecResult Validate(Connections connections, VariableDispenser variableDispenser,
-                                               IDTSComponentEvents componentEvents, IDTSLogging log)
+        public override DTSExecResult Validate(Connections connections, VariableDispenser variableDispenser, IDTSComponentEvents componentEvents, IDTSLogging log)
         {
             bool isBaseValid = true;
 
@@ -124,7 +123,7 @@ namespace SSISExecuteAssemblyTask100
         #region Execute
 
         /// <summary>
-        /// 
+        /// Just execute the task
         /// </summary>
         /// <param name="connections">Get the list of all connectors</param>
         /// <param name="variableDispenser">Variables Handler</param>
@@ -139,6 +138,7 @@ namespace SSISExecuteAssemblyTask100
             GetNeededVariables(variableDispenser);
 
             componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Filename: " + connections[AssemblyConnector].ConnectionString, string.Empty, 0, ref refire);
+
             try
             {
                 //Get the path and folder of the targeted file
@@ -216,6 +216,16 @@ namespace SSISExecuteAssemblyTask100
             return base.Execute(connections, variableDispenser, componentEvents, log, transaction);
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Fill the ConfigurationFile of AppDomain property if a ConnectionFile Property is specified
+        /// </summary>
+        /// <param name="variableDispenser"></param>
+        /// <param name="connections"></param>
+        /// <param name="appDomainSetup"></param>
         private void GetConfigurationFile(VariableDispenser variableDispenser, Connections connections, AppDomainSetup appDomainSetup)
         {
             if (ConfigurationType != SSISExecuteAssemblyTask100.ConfigurationType.NO_CONFIGURATION)
@@ -234,10 +244,10 @@ namespace SSISExecuteAssemblyTask100
             }
         }
 
-        #endregion
-
-        #region Methods
-
+        /// <summary>
+        /// Get REF or OUT values obtained after the execution of the method 
+        /// </summary>
+        /// <param name="paramObject"></param>
         private void GetRefValueParamsWithoutMethodInfo(object[] paramObject)
         {
             int paramIndex = 0;
@@ -298,18 +308,24 @@ namespace SSISExecuteAssemblyTask100
                 foreach (string mappedParam in mappedParams)
                 {
                     var param = mappedParam.Split('|')[1];
-
-                    if (param.Contains("@"))
+                    try
                     {
-                        var regexStr = param.Split('@');
-
-                        foreach (var nexSplitedVal in regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
+                        if (param.Contains("@"))
                         {
-                            variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                            var regexStr = param.Split('@');
+
+                            foreach (var nexSplitedVal in
+                                    regexStr.Where(val => val.Trim().Length != 0).Select( strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
+                            {
+                                variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                            }
                         }
+                        //else
+                        //    variableDispenser.LockForRead(param);
                     }
-                    else
-                        variableDispenser.LockForRead(param);
+                    catch
+                    {
+                    }
                 }
 
                 //Get variables for Configuration File
@@ -388,11 +404,12 @@ namespace SSISExecuteAssemblyTask100
                     var mappedParams = MappingParams.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToArray();
                     foreach (string param in mappedParams.Where(param => param.Length > 0).Where(param => param.Split('|')[0].Split('=')[0].Trim() == parameterInfo.Name))
                     {
-                        objects[paramIndex] = param.Split('|')[1].Contains("@")
-                                                  ? EvaluateExpression(param.Split('|')[1], variableDispenser)
-                                                  : (!(parameterInfo.ParameterType.IsByRef || parameterInfo.IsOut))
-                                                        ? vars[param.Split('|')[1].Trim()].Value
-                                                        : null;
+                        objects[paramIndex] = EvaluateExpression(param.Split('|')[1], variableDispenser);
+                        //param.Split('|')[1].Contains("@")
+                        //                           ? EvaluateExpression(param.Split('|')[1], variableDispenser)
+                        //                           : (!(parameterInfo.ParameterType.IsByRef || parameterInfo.IsOut))
+                        //                                 ? vars[param.Split('|')[1].Trim()].Value
+                        //                                 : null;
 
                         paramIndex++;
 
@@ -429,11 +446,12 @@ namespace SSISExecuteAssemblyTask100
                                  let paramInfo = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[1]
                                  let paramType = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[0].Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries)[1]
                                  let paramDirection = mappedParam.Split(new[] { "|" }, StringSplitOptions.RemoveEmptyEntries)[2]
-                                 select Convert.ChangeType(((paramInfo.Contains("@"))
-                                                            ? EvaluateExpression(paramInfo.Trim(), variableDispenser)
-                                                            : (paramDirection == ParameterDirection.IN)
-                                                                    ? vars[paramInfo.Trim()].Value
-                                                                    : vars["@" + paramInfo.Trim()].Value)
+                                 select Convert.ChangeType(EvaluateExpression(paramInfo.Trim(), variableDispenser)
+                                     //select Convert.ChangeType(((paramInfo.Contains("@"))
+                                     //                           ? EvaluateExpression(paramInfo.Trim(), variableDispenser)
+                                     //                           : (paramDirection == ParameterDirection.IN)
+                                     //                                   ? vars[paramInfo.Trim()].Value
+                                     //                                   : vars["@" + paramInfo.Trim()].Value)
                                                            , Type.GetType(paramType)));
             }
             catch (Exception exception)

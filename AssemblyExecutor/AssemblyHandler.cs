@@ -13,7 +13,7 @@ namespace SSISExecuteAssemblyTask100
 
         #endregion
 
-        #region overrided Methods
+        #region Overrided Methods
         public override object InitializeLifetimeService()
         {
             return null;

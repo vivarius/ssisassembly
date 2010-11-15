@@ -8,6 +8,10 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Controls;
+using Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using TaskHost = Microsoft.SqlServer.Dts.Runtime.TaskHost;
+using Variable = Microsoft.SqlServer.Dts.Runtime.Variable;
+using VariableDispenser = Microsoft.SqlServer.Dts.Runtime.VariableDispenser;
 
 namespace SSISExecuteAssemblyTask100
 {
@@ -336,17 +340,25 @@ namespace SSISExecuteAssemblyTask100
 
             cmbMethod.Items.Clear();
             grdParameters.Rows.Clear();
-            foreach (MethodInfo method in from type in _assembly.GetTypes()
-                                          where @namespace == type.Namespace && type.Name == classes
-                                          select type.GetMethods()
-                                              into methodName
-                                              from method in methodName
-                                              where method.ReflectedType.IsPublic && !method.ReflectedType.IsGenericTypeDefinition && method.ReflectedType.IsVisible
-                                              select method)
+
+            //foreach (MethodInfo method in from type in _assembly.GetTypes()
+            //                              where @namespace == type.Namespace && type.Name == classes
+            //                              select type.GetMethods()
+            //                                  into methodName
+            //                                  from method in methodName
+            //                                  where method.ReflectedType.IsPublic //&& !method.ReflectedType.IsGenericTypeDefinition && method.ReflectedType.IsVisible
+            //                                  select method)
+            //{
+            //      cmbMethod.Items.Add(new ComboBoxObjectComboItem(method, method.Name));
+            //}
+
+            Type type = _assembly.GetTypes().First(t => t.Namespace == @namespace && t.Name == classes);
+
+            foreach (var method in type.GetMethods().Where(t => t.IsPublic))
             {
+
                 cmbMethod.Items.Add(new ComboBoxObjectComboItem(method, method.Name));
             }
-
 
             cmbMethod.DisplayMember = "DisplayMember";
             cmbMethod.ValueMember = "ValueMemeber";
@@ -434,7 +446,7 @@ namespace SSISExecuteAssemblyTask100
                 if (parameterInfo.ParameterType.IsByRef && variable.DataType == TypeCode.Object ||
                     Type.GetTypeCode(Type.GetType(parameterInfo.ParameterType.FullName)) == variable.DataType)
                 {
-                    comboBoxCell.Items.Add(variable.Name);
+                    comboBoxCell.Items.Add(string.Format("@[{0}::{1}]", variable.Namespace, variable.Name));
                 }
             }
 
@@ -460,7 +472,7 @@ namespace SSISExecuteAssemblyTask100
 
             foreach (Variable variable in Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType))
             {
-                comboBox.Items.Add(variable.Name);
+                comboBox.Items.Add(string.Format("@[{0}::{1}]", variable.Namespace, variable.Name));
             }
 
             if (isFirstLoad && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE] != null && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].GetValue(_taskHost) != null)
@@ -474,7 +486,7 @@ namespace SSISExecuteAssemblyTask100
 
         private List<string> LoadVariables(string parameterInfo)
         {
-            return Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType).Select(variable => variable.Name).ToList();
+            return Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType).Select(variable => string.Format("@[{0}::{1}]", variable.Namespace, variable.Name)).ToList();
         }
 
         #endregion
@@ -498,6 +510,26 @@ namespace SSISExecuteAssemblyTask100
             {
                 cmbConfigurationFile.Items.Add(connection.Name);
             }
+        }
+
+        /// <summary>
+        /// This method evaluate expressions like @([System::TaskName] + [System::TaskID]) or any other operation created using 
+        /// ExpressionBuilder
+        /// </summary>
+        /// <param name="mappedParam"></param>
+        /// <param name="variableDispenser"></param>
+        /// <returns></returns>
+        private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
+        {
+            object variableObject;
+
+            var expressionEvaluatorClass = new ExpressionEvaluatorClass
+            {
+                Expression = mappedParam
+            };
+
+            expressionEvaluatorClass.Evaluate(DtsConvert.GetExtendedInterface(variableDispenser), out variableObject, false);
+            return variableObject;
         }
 
         #endregion
