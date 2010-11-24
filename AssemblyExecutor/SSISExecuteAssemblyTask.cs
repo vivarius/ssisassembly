@@ -27,6 +27,9 @@ namespace SSISExecuteAssemblyTask100
     public class SSISExecuteAssemblyTask : Task, IDTSComponentPersist
     {
         #region Constructor
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SSISExecuteAssemblyTask"/> class.
+        /// </summary>
         public SSISExecuteAssemblyTask()
         {
         }
@@ -34,22 +37,58 @@ namespace SSISExecuteAssemblyTask100
         #endregion
 
         #region Public Properties
+        /// <summary>
+        /// Gets or sets the assembly connector.
+        /// </summary>
+        /// <value>The assembly connector.</value>
         [Category("Component specific"), Description("The connector associated with the task")]
         public string AssemblyConnector { get; set; }
+        /// <summary>
+        /// Gets or sets the assembly path.
+        /// </summary>
+        /// <value>The assembly path.</value>
         [Category("Component specific"), Description("The path to the assembly file")]
         public string AssemblyPath { get; set; }
+        /// <summary>
+        /// Gets or sets the assembly namespace.
+        /// </summary>
+        /// <value>The assembly namespace.</value>
         [Category("Component specific"), Description("Source namespace")]
         public string AssemblyNamespace { get; set; }
+        /// <summary>
+        /// Gets or sets the assembly class.
+        /// </summary>
+        /// <value>The assembly class.</value>
         [Category("Component specific"), Description("Source class")]
         public string AssemblyClass { get; set; }
+        /// <summary>
+        /// Gets or sets the assembly method.
+        /// </summary>
+        /// <value>The assembly method.</value>
         [Category("Component specific"), Description("Method to execute")]
         public string AssemblyMethod { get; set; }
+        /// <summary>
+        /// Gets or sets the mapping params.
+        /// </summary>
+        /// <value>The mapping params.</value>
         [Category("Component specific"), Description("Mapping of the parameters of the method to execute")]
         public string MappingParams { get; set; }
+        /// <summary>
+        /// Gets or sets the out put variable.
+        /// </summary>
+        /// <value>The out put variable.</value>
         [Category("Component specific"), Description("Output variable")]
         public string OutPutVariable { get; set; }
+        /// <summary>
+        /// Gets or sets the configuration file.
+        /// </summary>
+        /// <value>The configuration file.</value>
         [Category("Component specific"), Description("The path to the configuration file")]
         public string ConfigurationFile { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the configuration.
+        /// </summary>
+        /// <value>The type of the configuration.</value>
         [Category("Component specific"), Description("Configuration type")]
         public string ConfigurationType { get; set; }
 
@@ -66,6 +105,13 @@ namespace SSISExecuteAssemblyTask100
         /// <summary>
         /// Validate local parameters
         /// </summary>
+        /// <param name="connections">A collection of connections used by the task.</param>
+        /// <param name="variableDispenser">A <see cref="T:Microsoft.SqlServer.Dts.Runtime.VariableDispenser"/> object for locking variables.</param>
+        /// <param name="componentEvents">An object that implements the <see cref="T:Microsoft.SqlServer.Dts.Runtime.IDTSComponentEvents"/> interface.</param>
+        /// <param name="log">An object that implements the <see cref="T:Microsoft.SqlServer.Dts.Runtime.IDTSLogging"/> interface.</param>
+        /// <returns>
+        /// A value from the <see cref="T:Microsoft.SqlServer.Dts.Runtime.DTSExecResult"/> enumeration.
+        /// </returns>
         public override DTSExecResult Validate(Connections connections, VariableDispenser variableDispenser, IDTSComponentEvents componentEvents, IDTSLogging log)
         {
             bool isBaseValid = true;
@@ -223,9 +269,9 @@ namespace SSISExecuteAssemblyTask100
         /// <summary>
         /// Fill the ConfigurationFile of AppDomain property if a ConnectionFile Property is specified
         /// </summary>
-        /// <param name="variableDispenser"></param>
-        /// <param name="connections"></param>
-        /// <param name="appDomainSetup"></param>
+        /// <param name="variableDispenser">The variable dispenser.</param>
+        /// <param name="connections">The connections.</param>
+        /// <param name="appDomainSetup">The app domain setup.</param>
         private void GetConfigurationFile(VariableDispenser variableDispenser, Connections connections, AppDomainSetup appDomainSetup)
         {
             if (ConfigurationType != SSISExecuteAssemblyTask100.ConfigurationType.NO_CONFIGURATION)
@@ -245,9 +291,9 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
-        /// Get REF or OUT values obtained after the execution of the method 
+        /// Get REF or OUT values obtained after the execution of the method
         /// </summary>
-        /// <param name="paramObject"></param>
+        /// <param name="paramObject">The param object.</param>
         private void GetRefValueParamsWithoutMethodInfo(object[] paramObject)
         {
             int paramIndex = 0;
@@ -268,10 +314,10 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
-        /// Get REF or OUT values obtained after the execution of the method 
+        /// Get REF or OUT values obtained after the execution of the method
         /// </summary>
-        /// <param name="methodInfo"></param>
-        /// <param name="paramObject"></param>
+        /// <param name="methodInfo">The method info.</param>
+        /// <param name="paramObject">The param object.</param>
         private void GetRefValueParams(MethodInfo methodInfo, object[] paramObject)
         {
             int paramIndex = 0;
@@ -297,7 +343,7 @@ namespace SSISExecuteAssemblyTask100
         /// <summary>
         /// This method recupers all needed variable saved in the component property 'MappingParams'
         /// </summary>
-        /// <param name="variableDispenser"></param>
+        /// <param name="variableDispenser">The variable dispenser.</param>
         private void GetNeededVariables(VariableDispenser variableDispenser)
         {
             try
@@ -358,11 +404,11 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
-        /// This method evaluate expressions like @([System::TaskName] + [System::TaskID]) or any other operation created using 
+        /// This method evaluate expressions like @([System::TaskName] + [System::TaskID]) or any other operation created using
         /// ExpressionBuilder
         /// </summary>
-        /// <param name="mappedParam"></param>
-        /// <param name="variableDispenser"></param>
+        /// <param name="mappedParam">The mapped param.</param>
+        /// <param name="variableDispenser">The variable dispenser.</param>
         /// <returns></returns>
         private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
         {
@@ -378,14 +424,14 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
-        /// Prepares method's parameters that will be executed 
-        ///     It will recuperate the direct values
-        ///     It will make the interpretation of the expressions
-        ///     It will pass NULL value for REF Or OUT params
+        /// Prepares method's parameters that will be executed
+        /// It will recuperate the direct values
+        /// It will make the interpretation of the expressions
+        /// It will pass NULL value for REF Or OUT params
         /// </summary>
-        /// <param name="vars"></param>
-        /// <param name="variableDispenser"></param>
-        /// <param name="methodInfo"></param>
+        /// <param name="vars">The vars.</param>
+        /// <param name="variableDispenser">The variable dispenser.</param>
+        /// <param name="methodInfo">The method info.</param>
         /// <returns></returns>
         private object[] GetValuedParams(Variables vars, VariableDispenser variableDispenser, MethodInfo methodInfo)
         {
@@ -426,13 +472,13 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
-        /// Prepares method's parameters that will be executed 
-        ///     It will recuperate the direct values
-        ///     It will make the interpretation of the expressions
-        ///     It will pass NULL value for REF Or OUT params
+        /// Prepares method's parameters that will be executed
+        /// It will recuperate the direct values
+        /// It will make the interpretation of the expressions
+        /// It will pass NULL value for REF Or OUT params
         /// </summary>
-        /// <param name="vars"></param>
-        /// <param name="variableDispenser"></param>
+        /// <param name="vars">The vars.</param>
+        /// <param name="variableDispenser">The variable dispenser.</param>
         /// <returns></returns>
         private List<object> GetValuedParamsWithoutMethodInfo(Variables vars, VariableDispenser variableDispenser)
         {
@@ -466,7 +512,11 @@ namespace SSISExecuteAssemblyTask100
 
         #region IDTSComponentPersist Members
 
-        //Get properties from package
+        /// <summary>
+        /// Loads component information from XML.
+        /// </summary>
+        /// <param name="node">The node that contains the information to be loaded.</param>
+        /// <param name="infoEvents">An object that implements the <see cref="T:Microsoft.SqlServer.Dts.Runtime.IDTSInfoEvents"/> interface for raising events (errors, warnings, and so on) during persistence.</param>
         void IDTSComponentPersist.LoadFromXML(XmlElement node, IDTSInfoEvents infoEvents)
         {
             if (node.Name != "SSISExecuteAssemblyTask")
@@ -492,7 +542,11 @@ namespace SSISExecuteAssemblyTask100
             }
         }
 
-        //Save properties to package
+        /// <summary>
+        /// Saves a component to XML. Tasks and containers implement this method.
+        /// </summary>
+        /// <param name="doc">The XML document to which to save the information.</param>
+        /// <param name="infoEvents">An object that implements the <see cref="T:Microsoft.SqlServer.Dts.Runtime.IDTSInfoEvents"/> interface for raising events (errors, warnings, and so on) during persistence.</param>
         void IDTSComponentPersist.SaveToXML(XmlDocument doc, IDTSInfoEvents infoEvents)
         {
             XmlElement taskElement = doc.CreateElement(string.Empty, "SSISExecuteAssemblyTask", string.Empty);

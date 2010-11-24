@@ -31,11 +31,19 @@ namespace SSISExecuteAssemblyTask100
         #endregion
 
         #region Public Properties
+        /// <summary>
+        /// Gets the variables.
+        /// </summary>
+        /// <value>The variables.</value>
         private Variables Variables
         {
             get { return _taskHost.Variables; }
         }
 
+        /// <summary>
+        /// Gets the connections.
+        /// </summary>
+        /// <value>The connections.</value>
         private Connections Connections
         {
             get { return _connections; }
@@ -45,6 +53,11 @@ namespace SSISExecuteAssemblyTask100
 
         #region ctor
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="frmAssembly"/> class.
+        /// </summary>
+        /// <param name="taskHost">The task host.</param>
+        /// <param name="connections">The connections.</param>
         public frmAssembly(TaskHost taskHost, Connections connections)
         {
             InitializeComponent();
@@ -243,6 +256,9 @@ namespace SSISExecuteAssemblyTask100
         #region Methods
         #region Assembly's specifics
 
+        /// <summary>
+        /// Selects the right method.
+        /// </summary>
         private void SelectTheRightMethod()
         {
             int index = 0;
@@ -275,6 +291,10 @@ namespace SSISExecuteAssemblyTask100
             }
         }
 
+        /// <summary>
+        /// Gets the assembly info.
+        /// </summary>
+        /// <param name="filePath">The file path.</param>
         private void GetAssemblyInfo(string filePath)
         {
             cmbNamespace.Items.Clear();
@@ -295,6 +315,9 @@ namespace SSISExecuteAssemblyTask100
             }
         }
 
+        /// <summary>
+        /// Gets the assembly namespace.
+        /// </summary>
         private void GetAssemblyNamespace()
         {
             Cursor = Cursors.WaitCursor;
@@ -316,6 +339,10 @@ namespace SSISExecuteAssemblyTask100
             Cursor = Cursors.Arrow;
         }
 
+        /// <summary>
+        /// Gets the assembly classes.
+        /// </summary>
+        /// <param name="namespace">The @namespace.</param>
         private void GetAssemblyClasses(string @namespace)
         {
             Cursor = Cursors.WaitCursor;
@@ -365,6 +392,10 @@ namespace SSISExecuteAssemblyTask100
             Cursor = Cursors.Arrow;
         }
 
+        /// <summary>
+        /// Gets the methods params.
+        /// </summary>
+        /// <param name="methodInfo">The method info.</param>
         private void GetMethodsParams(MethodInfo methodInfo)
         {
             Cursor = Cursors.WaitCursor;
@@ -404,6 +435,9 @@ namespace SSISExecuteAssemblyTask100
 
         #endregion
 
+        /// <summary>
+        /// Enables the configuration control file.
+        /// </summary>
         private void EnableConfigurationControlFile()
         {
             if (chkConfigFile.Checked)
@@ -421,12 +455,19 @@ namespace SSISExecuteAssemblyTask100
             }
         }
 
+        /// <summary>
+        /// Loads the variables for config file.
+        /// </summary>
         private void LoadVariablesForConfigFile()
         {
             cmbConfigurationFile.Items.Clear();
             cmbConfigurationFile.Items.AddRange(LoadVariables("System.String").ToArray());
         }
 
+        /// <summary>
+        /// Enbales the configuration file controls.
+        /// </summary>
+        /// <param name="bEnable">if set to <c>true</c> [b enable].</param>
         private void EnbaleConfigurationFileControls(bool bEnable)
         {
             optChooseVariable.Enabled = bEnable;
@@ -437,6 +478,11 @@ namespace SSISExecuteAssemblyTask100
 
         #region Variable Handlers
 
+        /// <summary>
+        /// Loads the variables.
+        /// </summary>
+        /// <param name="parameterInfo">The parameter info.</param>
+        /// <returns></returns>
         private DataGridViewComboBoxCell LoadVariables(ParameterInfo parameterInfo)
         {
             var comboBoxCell = new DataGridViewComboBoxCell();
@@ -461,11 +507,23 @@ namespace SSISExecuteAssemblyTask100
             return comboBoxCell;
         }
 
+        /// <summary>
+        /// Loads the variables.
+        /// </summary>
+        /// <param name="parameterInfo">The parameter info.</param>
+        /// <param name="selectedText">The selected text.</param>
+        /// <returns></returns>
         private ComboBox LoadVariables(ParameterInfo parameterInfo, ref string selectedText)
         {
             return LoadVariables(parameterInfo.ParameterType.FullName, ref selectedText);
         }
 
+        /// <summary>
+        /// Loads the variables.
+        /// </summary>
+        /// <param name="parameterInfo">The parameter info.</param>
+        /// <param name="selectedText">The selected text.</param>
+        /// <returns></returns>
         private ComboBox LoadVariables(string parameterInfo, ref string selectedText)
         {
             var comboBox = new ComboBox();
@@ -484,6 +542,11 @@ namespace SSISExecuteAssemblyTask100
             return comboBox;
         }
 
+        /// <summary>
+        /// Loads the variables.
+        /// </summary>
+        /// <param name="parameterInfo">The parameter info.</param>
+        /// <returns></returns>
         private List<string> LoadVariables(string parameterInfo)
         {
             return Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType).Select(variable => string.Format("@[{0}::{1}]", variable.Namespace, variable.Name)).ToList();
@@ -493,6 +556,9 @@ namespace SSISExecuteAssemblyTask100
 
         #region Load File Connections
 
+        /// <summary>
+        /// Loads the file connections.
+        /// </summary>
         private void LoadFileConnections()
         {
             cmbConnection.Items.Clear();
@@ -503,6 +569,9 @@ namespace SSISExecuteAssemblyTask100
             }
         }
 
+        /// <summary>
+        /// Loads the config file connections.
+        /// </summary>
         private void LoadConfigFileConnections()
         {
             cmbConfigurationFile.Items.Clear();
@@ -513,11 +582,11 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
-        /// This method evaluate expressions like @([System::TaskName] + [System::TaskID]) or any other operation created using 
+        /// This method evaluate expressions like @([System::TaskName] + [System::TaskID]) or any other operation created using
         /// ExpressionBuilder
         /// </summary>
-        /// <param name="mappedParam"></param>
-        /// <param name="variableDispenser"></param>
+        /// <param name="mappedParam">The mapped param.</param>
+        /// <param name="variableDispenser">The variable dispenser.</param>
         /// <returns></returns>
         private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
         {
