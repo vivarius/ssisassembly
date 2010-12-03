@@ -185,6 +185,8 @@ namespace SSISExecuteAssemblyTask100
 
             componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Filename: " + connections[AssemblyConnector].ConnectionString, string.Empty, 0, ref refire);
 
+            ;
+
             try
             {
                 //Get the path and folder of the targeted file
@@ -244,6 +246,24 @@ namespace SSISExecuteAssemblyTask100
                 // Get REF or OUT values obtained after the execution of the method 
                 GetRefValueParamsWithoutMethodInfo(varObjects.ToArray());
 
+                try
+                {
+                    AppDomain.Unload(appDomain);
+                    componentEvents.FireInformation(0, "SSISAssemblyTask",
+                                                   appDomain.IsFinalizingForUnload()
+                                                       ? "The domain Is Finalizing For Unload."
+                                                       : @"The domain Is Not Finalizing For Unload! Maybe you will catch an ""Invalid access to memory location.""",
+                                                   string.Empty, 0,
+                                                   ref refire);
+                }
+                catch (AppDomainUnloadedException appDomainUnloadedException)
+                {
+                    componentEvents.FireInformation(0, "SSISAssemblyTask",
+                                                   string.Format(@"The assembly's AppDomain does not exist. Details: {0}", appDomainUnloadedException.Message),
+                                                   string.Empty, 0,
+                                                   ref refire);
+                }
+
                 //...finally we log the successfull information
                 componentEvents.FireInformation(0, "SSISAssemblyTask", "The method was executed successfully.", string.Empty, 0, ref refire);
             }
@@ -253,6 +273,7 @@ namespace SSISExecuteAssemblyTask100
             }
             finally
             {
+
                 if (_vars.Locked)
                 {
                     _vars.Unlock();
@@ -361,7 +382,7 @@ namespace SSISExecuteAssemblyTask100
                             var regexStr = param.Split('@');
 
                             foreach (var nexSplitedVal in
-                                    regexStr.Where(val => val.Trim().Length != 0).Select( strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
+                                    regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
                             {
                                 variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
                             }
