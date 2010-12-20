@@ -30,6 +30,7 @@ namespace SSISExecuteAssemblyTask100
         {
             return null;
         }
+
         #endregion
 
         #region Methods

@@ -17,7 +17,7 @@ namespace SSISExecuteAssemblyTask100
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.0.304," +
+        "Version=1.0.1.4," +
         "Culture=Neutral," +
         "PublicKeyToken=99d80f2884c4916d",
         IconResource = "ExecuteAssemblyTask.ico",
@@ -185,8 +185,6 @@ namespace SSISExecuteAssemblyTask100
 
             componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Filename: " + connections[AssemblyConnector].ConnectionString, string.Empty, 0, ref refire);
 
-            ;
-
             try
             {
                 //Get the path and folder of the targeted file
@@ -209,7 +207,9 @@ namespace SSISExecuteAssemblyTask100
 
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Create AppDomain... ", string.Empty, 0, ref refire);
 
-                AppDomain appDomain = AppDomain.CreateDomain("AppDomainSSISAssemblyTask", null, appDomainSetup);
+                AppDomain appDomain = AppDomain.CreateDomain("AppDomainSSISAssemblyTask",
+                                                             null,
+                                                             appDomainSetup);
 
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Create AssemblyHandler... ", string.Empty, 0, ref refire);
 
@@ -413,8 +413,18 @@ namespace SSISExecuteAssemblyTask100
                         variableDispenser.LockForRead(param);
                 }
 
+                //Get variable for out put variable // Lock it for "write"
                 if (!string.IsNullOrEmpty(OutPutVariable))
-                    variableDispenser.LockForWrite(OutPutVariable);
+                    if (OutPutVariable.Contains("@"))
+                    {
+                        var regexStr = OutPutVariable.Split('@');
+
+                        foreach (var nexSplitedVal in regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
+                        {
+                            variableDispenser.LockForWrite(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                        }
+                    }
+
             }
             catch (Exception)
             {

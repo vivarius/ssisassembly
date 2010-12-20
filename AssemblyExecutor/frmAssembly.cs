@@ -427,7 +427,8 @@ namespace SSISExecuteAssemblyTask100
             }
 
             string selectedText = string.Empty;
-            cmbBoxReturnVariable.DataSource = LoadVariables(methodInfo.ReturnParameter, ref selectedText).Items;
+
+            cmbBoxReturnVariable.DataSource = LoadVariables(methodInfo.ReturnParameter, ref selectedText).Items.Cast<string>().ToList().Where(s => s.Contains("User"));
             cmbBoxReturnVariable.Text = selectedText;
 
             Cursor = Cursors.Arrow;
@@ -528,6 +529,8 @@ namespace SSISExecuteAssemblyTask100
         {
             var comboBox = new ComboBox();
 
+            comboBox.Items.Add(string.Empty);
+
             foreach (Variable variable in Variables.Cast<Variable>().Where(variable => Type.GetTypeCode(Type.GetType(parameterInfo)) == variable.DataType))
             {
                 comboBox.Items.Add(string.Format("@[{0}::{1}]", variable.Namespace, variable.Name));
@@ -602,6 +605,16 @@ namespace SSISExecuteAssemblyTask100
         }
 
         #endregion
+
+        private void optChooseVariable_CheckedChanged(object sender, EventArgs e)
+        {
+            btConfigFileExpression.Enabled = optChooseVariable.Checked;
+        }
+
+        private void optChooseConfigFileConnector_CheckedChanged(object sender, EventArgs e)
+        {
+            btConfigFileExpression.Enabled = optChooseVariable.Checked;
+        }
 
         #endregion
     }

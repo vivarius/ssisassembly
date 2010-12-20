@@ -31,7 +31,7 @@ namespace SSISExecuteAssemblyTask100
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmAssembly));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -57,12 +57,12 @@ namespace SSISExecuteAssemblyTask100
             this.linkCodeplex = new System.Windows.Forms.LinkLabel();
             this.pbCodeplex = new System.Windows.Forms.PictureBox();
             this.grdParameters = new System.Windows.Forms.DataGridView();
-            this.lbOutputValue = new System.Windows.Forms.Label();
-            this.cmbBoxReturnVariable = new System.Windows.Forms.ComboBox();
             this.grdColParams = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grdColDirection = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grdColVars = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.grdColExpression = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.lbOutputValue = new System.Windows.Forms.Label();
+            this.cmbBoxReturnVariable = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -142,7 +142,7 @@ namespace SSISExecuteAssemblyTask100
             this.cmbConfigurationFile.FormattingEnabled = true;
             this.cmbConfigurationFile.Location = new System.Drawing.Point(76, 126);
             this.cmbConfigurationFile.Name = "cmbConfigurationFile";
-            this.cmbConfigurationFile.Size = new System.Drawing.Size(423, 21);
+            this.cmbConfigurationFile.Size = new System.Drawing.Size(409, 21);
             this.cmbConfigurationFile.TabIndex = 40;
             // 
             // optChooseVariable
@@ -155,6 +155,7 @@ namespace SSISExecuteAssemblyTask100
             this.optChooseVariable.TabIndex = 39;
             this.optChooseVariable.Text = "Path from Variable / Expression";
             this.optChooseVariable.UseVisualStyleBackColor = true;
+            this.optChooseVariable.CheckedChanged += new System.EventHandler(this.optChooseVariable_CheckedChanged);
             this.optChooseVariable.Click += new System.EventHandler(this.optChooseVariable_Click);
             // 
             // optChooseConfigFileConnector
@@ -169,14 +170,15 @@ namespace SSISExecuteAssemblyTask100
             this.optChooseConfigFileConnector.TabStop = true;
             this.optChooseConfigFileConnector.Text = "Path from File connector";
             this.optChooseConfigFileConnector.UseVisualStyleBackColor = true;
+            this.optChooseConfigFileConnector.CheckedChanged += new System.EventHandler(this.optChooseConfigFileConnector_CheckedChanged);
             this.optChooseConfigFileConnector.Click += new System.EventHandler(this.optChooseConfigFileConnector_Click);
             // 
             // btConfigFileExpression
             // 
             this.btConfigFileExpression.Enabled = false;
-            this.btConfigFileExpression.Location = new System.Drawing.Point(505, 124);
+            this.btConfigFileExpression.Location = new System.Drawing.Point(491, 124);
             this.btConfigFileExpression.Name = "btConfigFileExpression";
-            this.btConfigFileExpression.Size = new System.Drawing.Size(31, 23);
+            this.btConfigFileExpression.Size = new System.Drawing.Size(45, 23);
             this.btConfigFileExpression.TabIndex = 37;
             this.btConfigFileExpression.Text = "(fx)";
             this.btConfigFileExpression.UseVisualStyleBackColor = true;
@@ -350,24 +352,6 @@ namespace SSISExecuteAssemblyTask100
             this.grdParameters.TabIndex = 24;
             this.grdParameters.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.grdParameters_CellContentClick);
             // 
-            // lbOutputValue
-            // 
-            this.lbOutputValue.AutoSize = true;
-            this.lbOutputValue.Location = new System.Drawing.Point(8, 401);
-            this.lbOutputValue.Name = "lbOutputValue";
-            this.lbOutputValue.Size = new System.Drawing.Size(69, 13);
-            this.lbOutputValue.TabIndex = 25;
-            this.lbOutputValue.Text = "Output Value";
-            // 
-            // cmbBoxReturnVariable
-            // 
-            this.cmbBoxReturnVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbBoxReturnVariable.FormattingEnabled = true;
-            this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 398);
-            this.cmbBoxReturnVariable.Name = "cmbBoxReturnVariable";
-            this.cmbBoxReturnVariable.Size = new System.Drawing.Size(470, 21);
-            this.cmbBoxReturnVariable.TabIndex = 26;
-            // 
             // grdColParams
             // 
             this.grdColParams.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -399,15 +383,33 @@ namespace SSISExecuteAssemblyTask100
             // 
             // grdColExpression
             // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.Padding = new System.Windows.Forms.Padding(2);
-            this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(2);
+            this.grdColExpression.DefaultCellStyle = dataGridViewCellStyle3;
             this.grdColExpression.HeaderText = "f(x)";
             this.grdColExpression.Name = "grdColExpression";
             this.grdColExpression.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.grdColExpression.Text = "f(x)";
             this.grdColExpression.ToolTipText = "Expressions...";
             this.grdColExpression.Width = 30;
+            // 
+            // lbOutputValue
+            // 
+            this.lbOutputValue.AutoSize = true;
+            this.lbOutputValue.Location = new System.Drawing.Point(8, 401);
+            this.lbOutputValue.Name = "lbOutputValue";
+            this.lbOutputValue.Size = new System.Drawing.Size(69, 13);
+            this.lbOutputValue.TabIndex = 25;
+            this.lbOutputValue.Text = "Output Value";
+            // 
+            // cmbBoxReturnVariable
+            // 
+            this.cmbBoxReturnVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbBoxReturnVariable.FormattingEnabled = true;
+            this.cmbBoxReturnVariable.Location = new System.Drawing.Point(91, 398);
+            this.cmbBoxReturnVariable.Name = "cmbBoxReturnVariable";
+            this.cmbBoxReturnVariable.Size = new System.Drawing.Size(470, 21);
+            this.cmbBoxReturnVariable.TabIndex = 26;
             // 
             // frmAssembly
             // 
