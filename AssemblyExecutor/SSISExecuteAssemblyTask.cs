@@ -17,11 +17,11 @@ namespace SSISExecuteAssemblyTask100
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.1.4," +
+        "Version=1.0.1.9," +
         "Culture=Neutral," +
         "PublicKeyToken=99d80f2884c4916d",
         IconResource = "ExecuteAssemblyTask.ico",
-        RequiredProductLevel = DTSProductLevel.Enterprise,
+        RequiredProductLevel = DTSProductLevel.None,
         TaskContact = "Cosmin VLASIU -> cosmin.vlasiu@gmail.com"
         )]
     public class SSISExecuteAssemblyTask : Task, IDTSComponentPersist

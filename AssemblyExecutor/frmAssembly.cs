@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -27,7 +26,7 @@ namespace SSISExecuteAssemblyTask100
         private readonly TaskHost _taskHost;
         private readonly Connections _connections;
         private readonly Dictionary<string, string> _paramsManager = new Dictionary<string, string>();
-        private bool isFirstLoad = false;
+        private bool _isFirstLoad = false;
         #endregion
 
         #region Public Properties
@@ -61,7 +60,7 @@ namespace SSISExecuteAssemblyTask100
         public frmAssembly(TaskHost taskHost, Connections connections)
         {
             InitializeComponent();
-            isFirstLoad = true;
+            _isFirstLoad = true;
 
             _taskHost = taskHost;
             _connections = connections;
@@ -128,10 +127,18 @@ namespace SSISExecuteAssemblyTask100
                 }
 
                 cmbConnection.SelectedIndex = cmbConnection.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_CONNECTOR].GetValue(_taskHost).ToString());
+
                 GetAssemblyInfo(_taskHost.Properties[NamedStringMembers.ASSEMBLY_PATH].GetValue(_taskHost).ToString());
-                cmbNamespace.SelectedIndex = cmbNamespace.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].GetValue(_taskHost).ToString());
+
+                cmbNamespace.SelectedIndex = FindStringInComboBox(cmbNamespace,
+                                                                  _taskHost.Properties[NamedStringMembers.ASSEMBLY_NAMESPACE].GetValue(_taskHost).ToString(), 
+                                                                  -1);
                 GetAssemblyClasses(cmbNamespace.Text);
-                cmbClasses.SelectedIndex = cmbClasses.FindString(_taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].GetValue(_taskHost).ToString());
+
+                cmbClasses.SelectedIndex = FindStringInComboBox(cmbClasses, 
+                                                                _taskHost.Properties[NamedStringMembers.ASSEMBLY_CLASS].GetValue(_taskHost).ToString(), 
+                                                                -1);
+
                 GetAssemblyMethods(cmbNamespace.Text, cmbClasses.Text);
 
                 SelectTheRightMethod();
@@ -140,6 +147,7 @@ namespace SSISExecuteAssemblyTask100
             }
             catch (Exception exception)
             {
+                Cursor = Cursors.Arrow;
                 MessageBox.Show(exception.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
@@ -256,6 +264,21 @@ namespace SSISExecuteAssemblyTask100
         #region Methods
         #region Assembly's specifics
 
+        public int FindStringInComboBox(ComboBox comboBox, string searchTextItem, int startIndex)
+        {
+            if (startIndex >= comboBox.Items.Count)
+                return -1;
+
+            int indexPosition = comboBox.FindString(searchTextItem, startIndex);
+
+            if (indexPosition <= startIndex)
+                return -1;
+
+            return comboBox.Items[indexPosition].ToString() == searchTextItem 
+                                    ? indexPosition
+                                    : FindStringInComboBox(comboBox, searchTextItem, indexPosition);
+        }
+
         /// <summary>
         /// Selects the right method.
         /// </summary>
@@ -274,6 +297,7 @@ namespace SSISExecuteAssemblyTask100
                     var paramTypes = new Type[_paramsManager.Count];
 
                     int counter = 0;
+
                     foreach (var parameter in _paramsManager)
                         paramTypes[counter++] = Type.GetType(parameter.Key.Split('=')[1].Trim());
 
@@ -428,8 +452,12 @@ namespace SSISExecuteAssemblyTask100
 
             string selectedText = string.Empty;
 
-            cmbBoxReturnVariable.DataSource = LoadVariables(methodInfo.ReturnParameter, ref selectedText).Items.Cast<string>().ToList().Where(s => s.Contains("User"));
-            cmbBoxReturnVariable.Text = selectedText;
+            //cmbBoxReturnVariable = LoadVariables(methodInfo.ReturnParameter, ref selectedText).Items.Cast<string>().ToList().Where(s => s.Contains("User"));
+
+            cmbBoxReturnVariable = LoadVariables(methodInfo.ReturnParameter, ref selectedText);
+            cmbBoxReturnVariable.SelectedIndex = FindStringInComboBox(cmbBoxReturnVariable,
+                                                                      selectedText,
+                                                                      -1);
 
             Cursor = Cursors.Arrow;
         }
@@ -497,7 +525,7 @@ namespace SSISExecuteAssemblyTask100
                 }
             }
 
-            if (isFirstLoad && _paramsManager != null && _paramsManager.Count > 0)
+            if (_isFirstLoad && _paramsManager != null && _paramsManager.Count > 0)
             {
                 if (!comboBoxCell.Items.Contains(_paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName]))
                     comboBoxCell.Items.Add(_paramsManager[parameterInfo.Name + " = " + parameterInfo.ParameterType.FullName]);
@@ -536,10 +564,10 @@ namespace SSISExecuteAssemblyTask100
                 comboBox.Items.Add(string.Format("@[{0}::{1}]", variable.Namespace, variable.Name));
             }
 
-            if (isFirstLoad && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE] != null && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].GetValue(_taskHost) != null)
+            if (_isFirstLoad && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE] != null && _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].GetValue(_taskHost) != null)
             {
                 selectedText = _taskHost.Properties[NamedStringMembers.OUTPUT_VARIABLE].GetValue(_taskHost).ToString();
-                isFirstLoad = false;
+                _isFirstLoad = false;
             }
 
             return comboBox;
