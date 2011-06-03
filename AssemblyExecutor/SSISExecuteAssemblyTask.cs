@@ -238,8 +238,8 @@ namespace SSISExecuteAssemblyTask100
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Get returned value if it exists or is not null... ", string.Empty, 0, ref refire);
 
                 //get returned value if it exists or is not null
-                if (retValue != null && string.IsNullOrEmpty(OutPutVariable) && _vars[OutPutVariable] != null)
-                    _vars[OutPutVariable].Value = retValue;
+                if (retValue != null && string.IsNullOrEmpty(GetVariableFromNamespaceContext(OutPutVariable)) && _vars[GetVariableFromNamespaceContext(OutPutVariable)] != null)
+                    _vars[GetVariableFromNamespaceContext(OutPutVariable)].Value = retValue;
 
                 componentEvents.FireInformation(0, "SSIS Execute Assembly Task", "Get REF or OUT values obtained after the execution of the method ... ", string.Empty, 0, ref refire);
 
@@ -443,15 +443,33 @@ namespace SSISExecuteAssemblyTask100
         /// <returns></returns>
         private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
         {
-            object variableObject;
+            object variableObject = null;
 
-            var expressionEvaluatorClass = new ExpressionEvaluatorClass
-                                                                    {
-                                                                        Expression = mappedParam
-                                                                    };
+            try
+            {
+                var expressionEvaluatorClass = new ExpressionEvaluatorClass
+                {
+                    Expression = mappedParam
+                };
 
-            expressionEvaluatorClass.Evaluate(DtsConvert.GetExtendedInterface(variableDispenser), out variableObject, false);
+                expressionEvaluatorClass.Evaluate(DtsConvert.GetExtendedInterface(variableDispenser), out variableObject, false);
+            }
+            catch (Exception) // for hardcoded values
+            {
+                variableObject = mappedParam;
+            }
+
             return variableObject;
+        }
+
+        /// <summary>
+        /// Gets the variable from namespace context.
+        /// </summary>
+        /// <param name="ssisVariable">The ssis variable.</param>
+        /// <returns></returns>
+        private static string GetVariableFromNamespaceContext(string ssisVariable)
+        {
+            return ssisVariable.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)[1].Replace("[", string.Empty).Replace("]", string.Empty).Replace("@", string.Empty);
         }
 
         /// <summary>
