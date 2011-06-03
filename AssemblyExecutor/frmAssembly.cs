@@ -621,14 +621,22 @@ namespace SSISExecuteAssemblyTask100
         /// <returns></returns>
         private static object EvaluateExpression(string mappedParam, VariableDispenser variableDispenser)
         {
-            object variableObject;
+            object variableObject = null;
 
-            var expressionEvaluatorClass = new ExpressionEvaluatorClass
+            try
             {
-                Expression = mappedParam
-            };
+                var expressionEvaluatorClass = new ExpressionEvaluatorClass
+                {
+                    Expression = mappedParam
+                };
 
-            expressionEvaluatorClass.Evaluate(DtsConvert.GetExtendedInterface(variableDispenser), out variableObject, false);
+                expressionEvaluatorClass.Evaluate(DtsConvert.GetExtendedInterface(variableDispenser), out variableObject, false);
+            }
+            catch (Exception) // for hardcoded values
+            {
+                variableObject = mappedParam;
+            }
+
             return variableObject;
         }
 
