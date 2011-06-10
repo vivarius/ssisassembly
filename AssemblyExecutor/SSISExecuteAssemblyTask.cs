@@ -312,6 +312,26 @@ namespace SSISExecuteAssemblyTask100
         }
 
         /// <summary>
+        /// Determines whether [is variable in lock for read or write] [the specified lock for read].
+        /// </summary>
+        /// <param name="lockForRead">The lock for read.</param>
+        /// <param name="variable">The variable.</param>
+        /// <returns>
+        /// 	<c>true</c> if [is variable in lock for read or write] [the specified lock for read]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsVariableInLockForReadOrWrite(List<string> lockForRead, string variable)
+        {
+            bool retVal = lockForRead.Contains(variable);
+
+            if (!retVal)
+            {
+                lockForRead.Add(variable);
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
         /// Get REF or OUT values obtained after the execution of the method
         /// </summary>
         /// <param name="paramObject">The param object.</param>
@@ -367,6 +387,9 @@ namespace SSISExecuteAssemblyTask100
         /// <param name="variableDispenser">The variable dispenser.</param>
         private void GetNeededVariables(VariableDispenser variableDispenser)
         {
+
+            List<string> lockForRead = new List<string>();
+
             try
             {
                 //Get variables for Method parameter
@@ -384,7 +407,8 @@ namespace SSISExecuteAssemblyTask100
                             foreach (var nexSplitedVal in
                                     regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
                             {
-                                variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                                if (!IsVariableInLockForReadOrWrite(lockForRead, nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']'))))
+                                    variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
                             }
                         }
                         //else
@@ -406,7 +430,8 @@ namespace SSISExecuteAssemblyTask100
 
                         foreach (var nexSplitedVal in regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
                         {
-                            variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                            if (!IsVariableInLockForReadOrWrite(lockForRead, nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']'))))
+                                variableDispenser.LockForRead(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
                         }
                     }
                     else
@@ -421,7 +446,8 @@ namespace SSISExecuteAssemblyTask100
 
                         foreach (var nexSplitedVal in regexStr.Where(val => val.Trim().Length != 0).Select(strVal => strVal.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries)))
                         {
-                            variableDispenser.LockForWrite(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
+                            if (!IsVariableInLockForReadOrWrite(lockForRead, nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']'))))
+                                variableDispenser.LockForWrite(nexSplitedVal[1].Remove(nexSplitedVal[1].IndexOf(']')));
                         }
                     }
 
