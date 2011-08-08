@@ -17,10 +17,10 @@ namespace SSISExecuteAssemblyTask100
         DisplayName = "Execute Assembly Task",
         UITypeName = "SSISExecuteAssemblyTask100.SSISExecuteAssemblyTaskUIInterface" +
         ",SSISExecuteAssemblyTask100," +
-        "Version=1.0.1.9," +
+        "Version=1.2.0.0," +
         "Culture=Neutral," +
         "PublicKeyToken=99d80f2884c4916d",
-        IconResource = "ExecuteAssemblyTask.ico",
+        IconResource = "SSISExecuteAssemblyTask100.ExecuteAssemblyTask.ico",
         RequiredProductLevel = DTSProductLevel.None,
         TaskContact = "Cosmin VLASIU -> cosmin.vlasiu@gmail.com"
         )]
